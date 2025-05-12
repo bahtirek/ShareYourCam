@@ -1,13 +1,10 @@
-import { Image, StyleSheet, TouchableOpacity, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import icons from '@constants/Icons';
 import QRCodeGenerator from '@/components/receiver/QrCodeGenerator';
-import { useEffect, useState } from 'react';
-import { SessionType } from '@/types';
+import { useEffect} from 'react';
 import { useSession } from '@/providers/SessionProvider';
 
 export default function HomeScreen() {
-    //const [session, setSession] = useState<SessionType>({});
     const { session, startSession } = useSession();
 
   useEffect(() => {

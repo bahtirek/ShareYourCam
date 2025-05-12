@@ -1,21 +1,18 @@
 import * as Crypto from 'expo-crypto';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-type SessionType = {
-  appId?: string,
-  sessionId?: string,
-  sessionToken?: string,
-}
+import { SessionType } from '@/types';
 
 type SessionProviderType = {
   session: SessionType;
   startSession: () => void;
+  //startSession: () => SessionType;
 }
 
 export const SessionContext = createContext<SessionProviderType>({
   session: {},
   startSession: () => {},
+  //startSession: () => ({}),
 });
 
 const SessionProvider = ({children}: PropsWithChildren) => {
@@ -71,8 +68,6 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     }
   }
 
-
-
   const startSession = async() => {
     const sessionToken = await generateToken();
     const sessionId = Crypto.randomUUID();
@@ -80,29 +75,6 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     setSession(session);
     saveSessionToStorage(session);
   }
-
-/*   const sessionAccountToStorage = async (account: SessionType) => {
- const UUID = Crypto.randomUUID();
-    try {
-      const jsonValue = JSON.stringify(account);
-      await AsyncStorage.setItem('account', jsonValue);
-      setAccount(account);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  const getAccountFromStorage = async() => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('account');
-      if(jsonValue != null) {
-        setAccount(JSON.parse(jsonValue)) 
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  } */
-
 
   return(
     <SessionContext.Provider value={{session, startSession}}>
@@ -113,4 +85,4 @@ const SessionProvider = ({children}: PropsWithChildren) => {
 
 export default SessionProvider;
 
-export const useAccount = () => useContext(SessionContext)
+export const useSession = () => useContext(SessionContext)

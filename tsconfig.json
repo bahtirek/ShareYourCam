@@ -2,10 +2,14 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@assets/*": ["assets/*"],
+      "@constants/*": ["src/constants/*"],
+      "@signals/*": ["src/signals/*"],
+      "@api/*": ["src/api/*"],
     }
   },
   "include": [
@@ -14,5 +18,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-  ]
+, "src/constants/Icons.js"  ]
 }

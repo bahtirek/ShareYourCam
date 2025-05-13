@@ -1,29 +1,51 @@
-import { Image, StyleSheet, TouchableOpacity, Text, View } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, Text, View, Modal, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '@constants/Icons';
+import QRCodeScanner from '@/components/sender/QrCodeScanner';
+import { useState } from 'react';
+import { router } from 'expo-router';
+import { useSession } from '@/providers/SessionProvider';
 
 export default function HomeScreen() {
-  const share = () => {
+  const { session, startSession } = useSession();
+  const [showLoaderModal, setShowLoaderModal] = useState(false);
+  const [showError, setShowError] = useState(false);
 
+  const onCancel = () => {
+    router.back()
   }
-  
-  const receive = () => {
 
+  const onReScan = () => {
+    router.back()
+  }
+
+  const handleScan = (sessionId: string) => {
+    console.log("data", sessionId);
+    startSession('sharer', sessionId);
   }
 
   return (
-    <SafeAreaView className='h-full w-full'>
-      <View className='h-full justify-between items-center'>
-        <View className='h-full w-full justify-around items-center flex-row'>
-          <View>
-            <Text className='text-md text-center'>QR code scanner</Text>
-          </View>
-          <View>
-              <Text className='text-md text-center'>Receive</Text>
-          </View>
+    <View style={styles.container}>
+      <QRCodeScanner onScan={handleScan }/>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showLoaderModal}
+      >
+        <View className='h-full w-full justify-center items-center bg-black/40 '>
+        <View className=''>
+          <ActivityIndicator size={'large'} color={"#FF4416"} />
         </View>
-
-      </View>
-    </SafeAreaView>
+        </View>
+      </Modal>
+    </View>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
+})

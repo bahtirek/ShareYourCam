@@ -5,14 +5,12 @@ import { SessionType } from '@/types';
 
 type SessionProviderType = {
   session: SessionType;
-  startSession: () => void;
-  //startSession: () => SessionType;
+  startSession: (role: string, sessionId?: string) => void;
 }
 
 export const SessionContext = createContext<SessionProviderType>({
   session: {},
   startSession: () => {},
-  //startSession: () => ({}),
 });
 
 const SessionProvider = ({children}: PropsWithChildren) => {
@@ -22,10 +20,6 @@ const SessionProvider = ({children}: PropsWithChildren) => {
   useEffect(() => {
     verifyAppId()
   }, [])
-
-/*   useEffect(() => {
-    saveSessionToStorage()
-  }, [session]) */
 
   const generateToken = async(length = 32) => {
     const byteArray = new Uint8Array(length);
@@ -43,6 +37,18 @@ const SessionProvider = ({children}: PropsWithChildren) => {
         appId = appIdFromStorage
       } else {
         await saveAppIdToStorage();
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  const getSessionTokensFromLocalStorage = async() => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('session');
+      if(jsonValue != null) {
+        const session: SessionType = JSON.parse(jsonValue);
+        return session.sessionTokens
       }
     } catch (e) {
       console.log(e);
@@ -68,12 +74,18 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     }
   }
 
-  const startSession = async() => {
-    const sessionToken = await generateToken();
-    const sessionId = Crypto.randomUUID();
-    const session = {appId: appId, sessionId, sessionToken}
+  const startSession = async(role: string, sessionId?: string) => {
+    const session: SessionType = {appId: appId, role: role}
+    if(role == 'receiver') {
+      const sessionToken = await generateToken();
+      const sessionTokens = await getSessionTokensFromLocalStorage();
+      session.sessionTokens = sessionTokens ? [...sessionTokens, sessionToken] : [sessionToken]
+      session.sessionId = Crypto.randomUUID();
+      saveSessionToStorage(session);
+    } else {
+      session.sessionId = sessionId;
+    }
     setSession(session);
-    saveSessionToStorage(session);
   }
 
   return(

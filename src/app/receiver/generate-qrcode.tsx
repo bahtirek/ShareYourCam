@@ -5,10 +5,10 @@ import { useEffect} from 'react';
 import { useSession } from '@/providers/SessionProvider';
 
 export default function HomeScreen() {
-    const { session, startSession } = useSession();
+  const { session, startSession } = useSession();
 
   useEffect(() => {
-    startSession()
+    startSession('receiver')
     console.log(session);
   }, [])
 

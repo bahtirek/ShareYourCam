@@ -22,10 +22,6 @@ const QRCodeScanner = ({onScan}: any) => {
     onScan(data)
   };
 
-  const toggleTorch = () => {
-    setTorchOn(!torchOn);
-  };
-
   const scanAgain = () => {
     setScanned(false)
   }
@@ -57,10 +53,10 @@ const QRCodeScanner = ({onScan}: any) => {
         }}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       >
-        <View className='w-full h-full justify-center items-center flex-1 bg-black/30'>
-          <View className='border-white w-64 h-64 border-2' />
+        <View className='w-full h-full justify-center items-center flex-1 bg-black/30'>       
+          <Text className='text-md text-center text-white -m-8'>Connect to receiver</Text>
+          <View className='border-white w-64 h-64 border-2 mt-12' />
           <View className='mt-12 flex-row'>
-            <IconButton icon={torchOn ? icons.lightbulb_on : icons.lightbulb_off} handlePress={toggleTorch} className='border border-primary bg-white rounded-lg' />
             {scanned && (
               <View className='ml-12'>
                 <IconButton icon={icons.qr_reload} handlePress={scanAgain} className='border border-primary bg-white rounded-lg' />

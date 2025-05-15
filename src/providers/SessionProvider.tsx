@@ -2,6 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SessionType } from '@/types';
+import { supabase } from "@/lib/supabase";
 
 type SessionProviderType = {
   session: SessionType;
@@ -33,14 +34,45 @@ const SessionProvider = ({children}: PropsWithChildren) => {
   const verifyAppId = async() => {
     try {
       const appIdFromStorage = await AsyncStorage.getItem('appId');
+      
       if(appIdFromStorage != null) {
         appId = appIdFromStorage
       } else {
-        await saveAppIdToStorage();
+        const UUID = Crypto.randomUUID();
+        const id = await selectAppId(UUID);
+        
+        if (id && id.length == 0) {
+          await insertAppId(UUID);
+          await saveAppIdToStorage(UUID);
+        }
       }
     } catch (e) {
       console.log(e);
     }
+  }
+
+  const insertAppId = async (id: string) => {
+    const { data, error }: any = await supabase
+      .from('user_app')
+      .insert({appId: id})
+      .single()
+  
+      if(error) {
+        throw new Error(error.message);
+      }      
+    return data;
+  }
+
+  const selectAppId = async (id: string) => {
+    const { data, error }: any = await supabase
+      .from('user_app')
+      .select('*')
+      .eq('appId', id)
+  
+      if(error) {
+        throw new Error(error.message);
+      }
+    return data;
   }
 
   const getSessionTokensFromLocalStorage = async() => {
@@ -55,11 +87,18 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     }
   }
 
-  const saveAppIdToStorage = async () => {
-    const UUID = Crypto.randomUUID();
+  const saveAppIdToStorage = async (UUID: string) => {
     try {
       await AsyncStorage.setItem('appId', UUID);
       setSession({appId: UUID})
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  const deleteAppIdInStorage = async () => {
+    try {
+      await AsyncStorage.removeItem('appId');
     } catch (e) {
       console.log(e);
     }

@@ -1,8 +1,8 @@
 import * as Crypto from 'expo-crypto';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SessionType } from '@/types';
-import { supabase } from "@/lib/supabase";
+import { selectAppId, insertAppId } from '@/api/app-id';
+import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionTokensFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
 
 type SessionProviderType = {
   session: SessionType;
@@ -33,84 +33,28 @@ const SessionProvider = ({children}: PropsWithChildren) => {
 
   const verifyAppId = async() => {
     try {
-      const appIdFromStorage = await AsyncStorage.getItem('appId');
+      const appIdFromStorage = await getAppIdFromStorage()
       
       if(appIdFromStorage != null) {
         appId = appIdFromStorage
       } else {
-        const UUID = Crypto.randomUUID();
-        const id = await selectAppId(UUID);
-        
-        if (id && id.length == 0) {
-          await insertAppId(UUID);
-          await saveAppIdToStorage(UUID);
-        }
+        const UUID = await generateAppId();
+        await insertAppId(UUID);
+        await saveAppIdToStorage(UUID);
+        setSession({appId: UUID})
       }
     } catch (e) {
       console.log(e);
     }
   }
 
-  const insertAppId = async (id: string) => {
-    const { data, error }: any = await supabase
-      .from('user_app')
-      .insert({appId: id})
-      .single()
-  
-      if(error) {
-        throw new Error(error.message);
-      }      
-    return data;
-  }
-
-  const selectAppId = async (id: string) => {
-    const { data, error }: any = await supabase
-      .from('user_app')
-      .select('*')
-      .eq('appId', id)
-  
-      if(error) {
-        throw new Error(error.message);
-      }
-    return data;
-  }
-
-  const getSessionTokensFromLocalStorage = async() => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('session');
-      if(jsonValue != null) {
-        const session: SessionType = JSON.parse(jsonValue);
-        return session.sessionTokens
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  const saveAppIdToStorage = async (UUID: string) => {
-    try {
-      await AsyncStorage.setItem('appId', UUID);
-      setSession({appId: UUID})
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  const deleteAppIdInStorage = async () => {
-    try {
-      await AsyncStorage.removeItem('appId');
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  
-  const saveSessionToStorage = async (session: SessionType) => {
-    try {
-      const jsonValue = JSON.stringify(session);
-      await AsyncStorage.setItem('session', jsonValue);
-    } catch (e) {
-      console.log(e);
-    }
+  const generateAppId = async () => {
+    let UUID, id;
+    do {
+      UUID = Crypto.randomUUID();
+      id = await selectAppId(UUID);
+    } while (id == -1);
+    return UUID;
   }
 
   const startSession = async(role: string, sessionId?: string) => {

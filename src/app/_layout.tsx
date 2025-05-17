@@ -32,6 +32,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="receiver/generate-qrcode" options={{ headerShown: true, title: 'QR code', headerTintColor: '#FF4416', headerTitleStyle: { color: '#FF4416' } }} />
         <Stack.Screen name="sender/scan-qrcode" options={{ headerShown: true, title: 'Scan QR code', headerTintColor: '#FF4416', headerTitleStyle: { color: '#FF4416' } }} />
+        <Stack.Screen name="sender/camera" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

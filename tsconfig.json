@@ -11,6 +11,7 @@
       "@signals/*": ["src/signals/*"],
       "@api/*": ["src/api/*"],
       "@lib/*": ["src/lib/*"],
+      "@services/*": ["src/services/*"],
     }
   },
   "include": [

@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@env';
 
 const isWeb = Platform.OS === "web";
 
@@ -35,8 +36,8 @@ const ExpoSecureStoreAdapter2 = {
   },
 };
 
-const supabaseUrl = 'https://ldntsmcwlpywzwqmumrd.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkbnRzbWN3bHB5d3p3cW11bXJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxMDA3NjQsImV4cCI6MjA2MjY3Njc2NH0.DlxVoFRM-v5KlvtHbbk-qe-aElXwDmyY_S2015Jvue8';
+const supabaseUrl = SUPABASE_URL;
+const supabaseAnonKey = SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

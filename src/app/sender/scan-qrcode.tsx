@@ -22,6 +22,7 @@ export default function HomeScreen() {
   const handleScan = (sessionId: string) => {
     console.log("data", sessionId);
     startSession('sharer', sessionId);
+    router.navigate('/sender/camera')
   }
 
   return (

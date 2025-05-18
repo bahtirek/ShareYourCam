@@ -2,38 +2,36 @@ import * as Crypto from 'expo-crypto';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { SessionType } from '@/types';
 import { selectAppId, insertAppId } from '@/api/app-id';
-import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionTokensFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
+import { signInAnonymously } from '@/api/auth';
+import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionIdsFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
+import { getSessionId } from '@/services/JWTServices';
 
 type SessionProviderType = {
   session: SessionType;
   startSession: (role: string, sessionId?: string) => void;
+  isInitialized: boolean;
 }
 
 export const SessionContext = createContext<SessionProviderType>({
-  session: {},
-  startSession: () => {},
+  session: {sessionId: 'test'},
+  startSession: () => ({}),
+  isInitialized: false
 });
+
+const jwt = {"session": {"access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InREWExOdXRDa1VDUGVHb00iLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2xkbnRzbWN3bHB5d3p3cW11bXJkLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI1YzQ2OGMwNy00MjA5LTQwNjUtYTg0NC01Y2NkMzBjZmQzMjMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ3NTk3OTEyLCJpYXQiOjE3NDc1OTQzMTIsImVtYWlsIjoiIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnt9LCJ1c2VyX21ldGFkYXRhIjp7fSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJhbm9ueW1vdXMiLCJ0aW1lc3RhbXAiOjE3NDc1OTQzMTJ9XSwic2Vzc2lvbl9pZCI6IjZlOGJkODY0LTc0Y2MtNDM4Ny04ZGQ0LWJjYTNlODVhNTEzYyIsImlzX2Fub255bW91cyI6dHJ1ZX0.tTCA3BDAqMjyDlScj-5IEzVn8VW1hJzIpcK5Bli97Mw", "expires_at": 1747597912, "expires_in": 3600, "refresh_token": "g35fodjzbyos", "token_type": "bearer", "user": {"app_metadata": [Object], "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [Array], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": [Object]}}, "user": {"app_metadata": {}, "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": {}}}
 
 const SessionProvider = ({children}: PropsWithChildren) => {
   const [session, setSession] = useState<SessionType>({});
+  const [isInitialized, setIsInitialized] = useState(false);
   let appId: string; 
 
   useEffect(() => {
     verifyAppId()
   }, [])
 
-  const generateToken = async(length = 32) => {
-    const byteArray = new Uint8Array(length);
-    await Crypto.getRandomValues(byteArray);
-    const token = Array.from(byteArray, (byte) => {
-      return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-    }).join('');
-    return token;
-  }
-
-  const verifyAppId = async() => {
+  const verifyAppId = async() => {   
     try {
-      const appIdFromStorage = await getAppIdFromStorage()
+      const appIdFromStorage = await getAppIdFromStorage();   
       
       if(appIdFromStorage != null) {
         appId = appIdFromStorage
@@ -46,6 +44,7 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     } catch (e) {
       console.log(e);
     }
+    setIsInitialized(true);
   }
 
   const generateAppId = async () => {
@@ -57,22 +56,29 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     return UUID;
   }
 
-  const startSession = async(role: string, sessionId?: string) => {
-    const session: SessionType = {appId: appId, role: role}
+  const startSession = async(role: string, receiverSessionId?: string) => {
+    const newSession: SessionType = {appId: appId, role: role}
+    //const jwt = await signInAnonymously();
+    const sessionId = getSessionId(jwt.session.access_token);
+    newSession.jwt = jwt;
+    newSession.sessionId = sessionId;
+    
     if(role == 'receiver') {
-      const sessionToken = await generateToken();
-      const sessionTokens = await getSessionTokensFromLocalStorage();
-      session.sessionTokens = sessionTokens ? [...sessionTokens, sessionToken] : [sessionToken]
-      session.sessionId = Crypto.randomUUID();
-      saveSessionToStorage(session);
+      const sessionIds = await getSessionIdsFromLocalStorage();
+      newSession.sessionIds = sessionIds ? [...sessionIds, sessionId] : [sessionId]
+      await saveSessionToStorage(newSession);
     } else {
-      session.sessionId = sessionId;
+      newSession.receiverSessionId = receiverSessionId
     }
-    setSession(session);
+    setSession(newSession);
+    
+    return newSession;
   }
 
+
+
   return(
-    <SessionContext.Provider value={{session, startSession}}>
+    <SessionContext.Provider value={{session, startSession, isInitialized}}>
       {children}
     </SessionContext.Provider>
   )

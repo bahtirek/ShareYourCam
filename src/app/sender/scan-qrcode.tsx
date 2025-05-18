@@ -21,6 +21,13 @@ export default function HomeScreen() {
 
   const handleScan = (sessionId: string) => {
     console.log("data", sessionId);
+    /* Check if session exists
+    show loader
+    check if exists
+    hide loader
+    startSession
+    navigate
+    */
     startSession('sharer', sessionId);
     router.navigate('/sender/camera')
   }

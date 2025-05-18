@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SessionType } from '@/types';
 
-export const getSessionTokensFromLocalStorage = async() => {
+export const getSessionIdsFromLocalStorage = async() => {
   try {
     const jsonValue = await AsyncStorage.getItem('session');
     if(jsonValue != null) {
       const session: SessionType = JSON.parse(jsonValue);
-      return session.sessionTokens
+      return session.sessionIds
     }
   } catch (e) {
     console.log(e);
@@ -33,6 +33,7 @@ export const saveSessionToStorage = async (session: SessionType) => {
   try {
     const jsonValue = JSON.stringify(session);
     await AsyncStorage.setItem('session', jsonValue);
+    return true
   } catch (e) {
     console.log(e);
   }

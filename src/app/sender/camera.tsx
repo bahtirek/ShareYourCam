@@ -1,10 +1,10 @@
 // screens/SenderScreen.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
-import { CameraView, CameraCapturedPicture, Camera, CameraMode,
-  CameraType, } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
+import { CameraView, CameraCapturedPicture, Camera, CameraMode, CameraType, } from 'expo-camera';
+import { useSession } from '@/providers/SessionProvider';
 import { sendImageToReceiver } from '@/services/ImageServices';
+import { insertImageData } from '@/api/images';
 
 export default function SenderScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -15,6 +15,7 @@ export default function SenderScreen() {
   const [mode, setMode] = useState<CameraMode>("picture");
   const [facing, setFacing] = useState<CameraType>("back");
   const cameraRef = useRef<CameraView>(null);
+  const { session, startSession } = useSession();
 
   useEffect(() => {
     (async () => {
@@ -39,17 +40,13 @@ export default function SenderScreen() {
   };
 
   const sendImage = async (photo: any): Promise<void> => {
-
     try {
       setIsSending(true);
-      const result = await sendImageToReceiver(photo.uri);
+      const result = await sendImageToReceiver(photo.uri, session.receiverSessionId!);
       
       if (result.success) {
         Alert.alert('Success', 'Image sent successfully');
-        // Reset state after successful send
-        setCapturedImage(null);
-        setReceiverId('');
-        setIsCameraVisible(true);
+        await insertImageData(session.receiverSessionId!, result.url!)
       } else {
         Alert.alert('Error', result.message || 'Failed to send image');
       }
@@ -69,23 +66,25 @@ export default function SenderScreen() {
     return <View style={styles.container}><Text>No access to camera</Text></View>;
   }
 
-  function toggleCameraFacing() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
-  }
-
   return (
     <View style={styles.container}>
         <View style={styles.container}>
-        <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>take</Text>
-          </TouchableOpacity>
-        </View>
-      </CameraView>
+          {
+            !isSending &&
+            <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.button} onPress={takePicture}>
+                  <Text style={styles.text}>take</Text>
+                </TouchableOpacity>
+              </View>
+            </CameraView>
+          }
+          {
+            isSending &&
+            <View className='h-full w-full justify-center items-center bg-white/70'>
+              <ActivityIndicator size={'large'} color={"#FF4416"} />
+            </View>
+          }
         </View>
     </View>
   );

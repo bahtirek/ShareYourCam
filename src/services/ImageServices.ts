@@ -3,11 +3,13 @@ import { supabase } from "@/lib/supabase";
 type SendResult = {
   success: boolean;
   message?: string;
+  url?: string
 }
 
 // Actual implementation using Firebase
 export const sendImageToReceiver = async (
-  imageUri: string
+  imageUri: string,
+  receiverSessionId: string
 ): Promise<SendResult> => {
   try {
     // Convert image URI to blob
@@ -16,15 +18,14 @@ export const sendImageToReceiver = async (
     const arrayBuffer = await new Response(blob).arrayBuffer();
 
     // Generate a unique file name
-    const filename = `public/${Date.now()}.jpg`;
-    const contentType = 'image/jpg';
+    const filename = `${receiverSessionId}/${Date.now()}.jpg`;
 
     const { data, error } = await supabase
       .storage
       .from('images')
       .upload(filename, arrayBuffer, { contentType: 'image/jpeg', upsert: false });
 
-    console.log("data",data);
+    console.log("storage data ",data);
     console.log("error", error);
     if(error) {
       console.error('Error sending image:', error);
@@ -33,15 +34,8 @@ export const sendImageToReceiver = async (
         message: error instanceof Error? error.message : 'Unknown error occurred'
       };
     }
-
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from('images')
-      .getPublicUrl(filename);
-
-    console.log('public url', publicUrl);
     
-    return { success: true };
+    return { success: true, url: filename };
   } catch (error) {
     console.error('Error sending image:', error);
     return { 

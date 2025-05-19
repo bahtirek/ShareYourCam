@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import { CameraView, Camera, CameraMode, CameraType, } from 'expo-camera';
 import IconButton from '@components/common/IconButton';
 import icons from '@/constants/Icons';
+import { useFocusEffect } from 'expo-router';
 
 const QRCodeScanner = ({onScan}: any) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -10,6 +11,7 @@ const QRCodeScanner = ({onScan}: any) => {
   const [torchOn, setTorchOn] = useState(false);
   const [facing, setFacing] = useState<CameraType>("back");
   const [mode, setMode] = useState<CameraMode>("picture");
+  const [active, setActive] = useState(true)
 
   useEffect(() => {
     (async () => {
@@ -18,8 +20,15 @@ const QRCodeScanner = ({onScan}: any) => {
     })();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      setActive(true)
+    }, [])
+  );
+
   const handleBarCodeScanned = ({ type, data }: any) => {
-    onScan(data)
+    setActive(false);
+    onScan(data);
   };
 
   const scanAgain = () => {
@@ -43,28 +52,31 @@ const QRCodeScanner = ({onScan}: any) => {
 
   return (
     <View className='w-full h-full justify-center items-center flex-1'>
-      <CameraView
-        style={styles.camera}
-        facing={facing}
-        mode={mode}
-        enableTorch={torchOn}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
-        }}
-        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-      >
-        <View className='w-full h-full justify-center items-center flex-1 bg-black/30'>       
-          <Text className='text-md text-center text-white -m-8'>Connect to receiver</Text>
-          <View className='border-white w-64 h-64 border-2 mt-12' />
-          <View className='mt-12 flex-row'>
-            {scanned && (
-              <View className='ml-12'>
-                <IconButton icon={icons.qr_reload} handlePress={scanAgain} className='border border-primary bg-white rounded-lg' />
-              </View>
-            )}
+      {
+        active &&
+        <CameraView
+          style={styles.camera}
+          facing={facing}
+          mode={mode}
+          enableTorch={torchOn}
+          barcodeScannerSettings={{
+            barcodeTypes: ["qr"],
+          }}
+          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        >
+          <View className='w-full h-full justify-center items-center flex-1 bg-black/30'>       
+            <Text className='text-md text-center text-white -m-8'>Connect to receiver</Text>
+            <View className='border-white w-64 h-64 border-2 mt-12' />
+            <View className='mt-12 flex-row'>
+              {scanned && (
+                <View className='ml-12'>
+                  <IconButton icon={icons.qr_reload} handlePress={scanAgain} className='border border-primary bg-white rounded-lg' />
+                </View>
+              )}
+            </View>
           </View>
-        </View>
-      </CameraView>
+        </CameraView>
+      }
     </View>
   );
 };

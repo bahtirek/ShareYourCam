@@ -18,7 +18,7 @@ export const SessionContext = createContext<SessionProviderType>({
   isInitialized: false
 });
 
-const jwt = {"session": {"access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InREWExOdXRDa1VDUGVHb00iLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2xkbnRzbWN3bHB5d3p3cW11bXJkLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI1YzQ2OGMwNy00MjA5LTQwNjUtYTg0NC01Y2NkMzBjZmQzMjMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ3NTk3OTEyLCJpYXQiOjE3NDc1OTQzMTIsImVtYWlsIjoiIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnt9LCJ1c2VyX21ldGFkYXRhIjp7fSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJhbm9ueW1vdXMiLCJ0aW1lc3RhbXAiOjE3NDc1OTQzMTJ9XSwic2Vzc2lvbl9pZCI6IjZlOGJkODY0LTc0Y2MtNDM4Ny04ZGQ0LWJjYTNlODVhNTEzYyIsImlzX2Fub255bW91cyI6dHJ1ZX0.tTCA3BDAqMjyDlScj-5IEzVn8VW1hJzIpcK5Bli97Mw", "expires_at": 1747597912, "expires_in": 3600, "refresh_token": "g35fodjzbyos", "token_type": "bearer", "user": {"app_metadata": [Object], "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [Array], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": [Object]}}, "user": {"app_metadata": {}, "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": {}}}
+//const jwt = {"session": {"access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InREWExOdXRDa1VDUGVHb00iLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2xkbnRzbWN3bHB5d3p3cW11bXJkLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI1YzQ2OGMwNy00MjA5LTQwNjUtYTg0NC01Y2NkMzBjZmQzMjMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ3NTk3OTEyLCJpYXQiOjE3NDc1OTQzMTIsImVtYWlsIjoiIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnt9LCJ1c2VyX21ldGFkYXRhIjp7fSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJhbm9ueW1vdXMiLCJ0aW1lc3RhbXAiOjE3NDc1OTQzMTJ9XSwic2Vzc2lvbl9pZCI6IjZlOGJkODY0LTc0Y2MtNDM4Ny04ZGQ0LWJjYTNlODVhNTEzYyIsImlzX2Fub255bW91cyI6dHJ1ZX0.tTCA3BDAqMjyDlScj-5IEzVn8VW1hJzIpcK5Bli97Mw", "expires_at": 1747597912, "expires_in": 3600, "refresh_token": "g35fodjzbyos", "token_type": "bearer", "user": {"app_metadata": [Object], "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [Array], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": [Object]}}, "user": {"app_metadata": {}, "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": {}}}
 
 const SessionProvider = ({children}: PropsWithChildren) => {
   const [session, setSession] = useState<SessionType>({});
@@ -58,7 +58,8 @@ const SessionProvider = ({children}: PropsWithChildren) => {
 
   const startSession = async(role: string, receiverSessionId?: string) => {
     const newSession: SessionType = {appId: appId, role: role}
-    //const jwt = await signInAnonymously();
+    const jwt = await signInAnonymously();
+    if(!jwt.session) return
     const sessionId = getSessionId(jwt.session.access_token);
     newSession.jwt = jwt;
     newSession.sessionId = sessionId;

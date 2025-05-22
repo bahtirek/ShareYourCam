@@ -9,12 +9,9 @@ import { useFocusEffect } from 'expo-router';
 import AlertModal from '@components/common/AlertModal';
 
 export default function HomeScreen() {
-  const { session, startSession } = useSession();
+  const { session, startSession, setReceiverSessionId } = useSession();
   const [showLoaderModal, setShowLoaderModal] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [showScaner, setShowScaner] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
-  const hasUnsavedChanges: boolean = false;
 
   useEffect(() => {
     setSession()
@@ -38,6 +35,7 @@ export default function HomeScreen() {
 
   const handleScan = async (sessionId: string) => {
     console.log("data", sessionId);
+    if(sessionId) setReceiverSessionId(sessionId)
     /* Check if session based on sessionId exists
     show loader
     check if exists

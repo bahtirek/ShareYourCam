@@ -12,14 +12,16 @@ export default function HomeScreen() {
   const [isSessionStarted, setIsSessionStarted] = useState(false)
 
   useEffect(() => {
-    const newSession = async () => {
-      await startSession('receiver');
-      
-      setIsSessionStarted(true)
-    }
     newSession();
     listenForImages();
   }, [])
+
+  const newSession = async () => {
+    await startSession('receiver');
+    console.log("session 21", session.sessionId);
+    
+    setIsSessionStarted(true)
+  }
 
   const listenForImages = () => {
     console.log('listening');

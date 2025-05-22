@@ -5,17 +5,18 @@ import { selectAppId, insertAppId } from '@/api/app-id';
 import { signInAnonymously, getSession } from '@/api/auth';
 import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionIdsFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
 import { getSessionId } from '@/services/JWTServices';
-import { supabase } from "@/lib/supabase";
 
 type SessionProviderType = {
   session: SessionType;
   startSession: (role: string, sessionId?: string) => Promise<boolean>;
+  setReceiverSessionId: (receiverSessionId: string) => void;
   isInitialized: boolean;
 }
 
 export const SessionContext = createContext<SessionProviderType>({
   session: {sessionId: 'test'},
   startSession: (async () => (false)),
+  setReceiverSessionId: () => ({}),
   isInitialized: false
 });
 
@@ -70,12 +71,12 @@ const SessionProvider = ({children}: PropsWithChildren) => {
       await startNewSession(sessionData, role)
       return true
     }
-    
+
     return false
   }
 
   const startNewSession = async(jwt: any,role: string, receiverSessionId?: string) => {
-    console.log("jwt",jwt);
+    //console.log("jwt",jwt);
     
     const newSession: SessionType = {appId: appId, role: role}
     const sessionId = getSessionId(jwt.session.access_token);
@@ -94,10 +95,12 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     return true
   }
 
-
+  const setReceiverSessionId = (receiverSessionId: string) => {
+    setSession({...session, receiverSessionId})
+  }
 
   return(
-    <SessionContext.Provider value={{session, startSession, isInitialized}}>
+    <SessionContext.Provider value={{session, startSession, isInitialized, setReceiverSessionId}}>
       {children}
     </SessionContext.Provider>
   )

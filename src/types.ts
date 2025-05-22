@@ -6,3 +6,16 @@ export type SessionType = {
   jwt?: any,
   receiverSessionId?: string
 }
+
+export type Action = {
+  label: string,
+  style: string,
+  onPress: () => void
+}
+
+export type AlertModalType = {
+  title: string, 
+  text: string, 
+  actions: Action[], 
+  showModal: boolean
+}

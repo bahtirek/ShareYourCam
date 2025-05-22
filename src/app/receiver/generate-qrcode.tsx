@@ -1,26 +1,38 @@
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCodeGenerator from '@/components/receiver/QrCodeGenerator';
-import { useContext, useEffect, useState} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from '@/providers/SessionProvider';
 import { supabase } from "@/lib/supabase";
-import { ImageContext } from '@/providers/ImagesProvider';
+import AlertModal from '@components/common/AlertModal';
+import { router, useFocusEffect } from 'expo-router';
 
 export default function HomeScreen() {
-  //const { session, startSession } = useContext(ImageContext)
   const { session, startSession, isInitialized } = useSession();
   const [isSessionStarted, setIsSessionStarted] = useState(false)
+  const [showAlertModal, setShowAlertModal] = useState(false);
 
   useEffect(() => {
-    newSession();
+    setSession();
     listenForImages();
   }, [])
 
-  const newSession = async () => {
-    await startSession('receiver');
-    console.log("session 21", session.sessionId);
+  useFocusEffect(
+    useCallback(() => {
+      setSession()
+    }, [])
+  );
+
+  const setSession = async() => {
+    setIsSessionStarted(false)
+    const result = await startSession('sharer');
+    console.log("result", result);
     
-    setIsSessionStarted(true)
+    if (result) {
+      setIsSessionStarted(true)
+    } else {
+      setShowAlertModal(true);
+    }
   }
 
   const listenForImages = () => {
@@ -66,6 +78,16 @@ export default function HomeScreen() {
           }
         </View>
       </View>
+      <AlertModal
+        title='Sorry!'
+        text='Something went wrong. Please try later.'
+        showModal={showAlertModal}
+        actions={
+          [
+            {label: 'Ok', style: 'text-primary',onPress:() => { router.push('/'), setShowAlertModal(false) }}
+          ]
+        }
+      ></AlertModal>
     </SafeAreaView>
   );
 }

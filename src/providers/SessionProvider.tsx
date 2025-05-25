@@ -2,19 +2,21 @@ import * as Crypto from 'expo-crypto';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { SessionType } from '@/types';
 import { selectAppId, insertAppId } from '@/api/app-id';
-import { signInAnonymously } from '@/api/auth';
+import { signInAnonymously, getSession } from '@/api/auth';
 import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionIdsFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
 import { getSessionId } from '@/services/JWTServices';
 
 type SessionProviderType = {
   session: SessionType;
-  startSession: (role: string, sessionId?: string) => void;
+  startSession: (role: string, sessionId?: string) => Promise<boolean>;
+  setReceiverSessionId: (receiverSessionId: string) => void;
   isInitialized: boolean;
 }
 
 export const SessionContext = createContext<SessionProviderType>({
   session: {sessionId: 'test'},
-  startSession: () => ({}),
+  startSession: (async () => (false)),
+  setReceiverSessionId: () => ({}),
   isInitialized: false
 });
 
@@ -57,9 +59,26 @@ const SessionProvider = ({children}: PropsWithChildren) => {
   }
 
   const startSession = async(role: string, receiverSessionId?: string) => {
+    const { sessionData, sessionError } = await getSession();
+
+    if(sessionData.session) {
+      await startNewSession(sessionData, role, receiverSessionId);
+      return true
+    } 
+
+    const { newSessionData, newSessionError } = await signInAnonymously();
+    if (newSessionData.session) {
+      await startNewSession(sessionData, role)
+      return true
+    }
+
+    return false
+  }
+
+  const startNewSession = async(jwt: any,role: string, receiverSessionId?: string) => {
+    //console.log("jwt",jwt);
+    
     const newSession: SessionType = {appId: appId, role: role}
-    const jwt = await signInAnonymously();
-    if(!jwt.session) return
     const sessionId = getSessionId(jwt.session.access_token);
     newSession.jwt = jwt;
     newSession.sessionId = sessionId;
@@ -73,13 +92,15 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     }
     setSession(newSession);
     
-    return newSession;
+    return true
   }
 
-
+  const setReceiverSessionId = (receiverSessionId: string) => {
+    setSession({...session, receiverSessionId})
+  }
 
   return(
-    <SessionContext.Provider value={{session, startSession, isInitialized}}>
+    <SessionContext.Provider value={{session, startSession, isInitialized, setReceiverSessionId}}>
       {children}
     </SessionContext.Provider>
   )

@@ -2,38 +2,52 @@ import { Image, StyleSheet, TouchableOpacity, Text, View, Modal, ActivityIndicat
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '@constants/Icons';
 import QRCodeScanner from '@/components/sender/QrCodeScanner';
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { router } from 'expo-router';
 import { useSession } from '@/providers/SessionProvider';
+import { useFocusEffect } from 'expo-router';
+import AlertModal from '@components/common/AlertModal';
 
 export default function HomeScreen() {
-  const { session, startSession } = useSession();
+  const { session, startSession, setReceiverSessionId } = useSession();
   const [showLoaderModal, setShowLoaderModal] = useState(false);
-  const [showError, setShowError] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
 
-  const onCancel = () => {
-    router.back()
+  useEffect(() => {
+    setSession()
+  }, [])
+  
+  useFocusEffect(
+    useCallback(() => {
+      setSession()
+    }, [])
+  );
+
+  const setSession = async() => {
+    setShowLoaderModal(true)
+    const result = await startSession('sharer');
+    if (result) {
+      setShowLoaderModal(false)
+    } else {
+      setShowAlertModal(true);
+    }
   }
 
-  const onReScan = () => {
-    router.back()
-  }
-
-  const handleScan = (sessionId: string) => {
+  const handleScan = async (sessionId: string) => {
     console.log("data", sessionId);
-    /* Check if session exists
+    if(sessionId) setReceiverSessionId(sessionId)
+    /* Check if session based on sessionId exists
     show loader
     check if exists
     hide loader
     startSession
     navigate
     */
-    startSession('sharer', sessionId);
     router.navigate('/sender/camera')
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView edges={["left", "right"]} className='h-full bg-white'>
       <QRCodeScanner onScan={handleScan }/>
       <Modal
         animationType="fade"
@@ -46,7 +60,17 @@ export default function HomeScreen() {
         </View>
         </View>
       </Modal>
-    </View>
+      <AlertModal
+        title='Sorry!'
+        text='Something went wrong. Please try later.'
+        showModal={showAlertModal}
+        actions={
+          [
+            {label: 'Ok', style: 'text-primary' ,onPress:() => { router.push('/'), setShowAlertModal(false) }}
+          ]
+        }
+      ></AlertModal>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({

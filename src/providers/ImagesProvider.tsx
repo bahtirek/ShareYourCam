@@ -1,49 +1,87 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { SessionType } from '@/types';
-import { selectAppId, insertAppId } from '@/api/app-id';
-import { signInAnonymously } from '@/api/auth';
-import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionIdsFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
-import { getSessionId } from '@/services/JWTServices';
-
+import ReactNativeBlobUtil from 'react-native-blob-util';
+import { PermissionsAndroid, Platform, Alert} from 'react-native';
 
 type ImageProviderType = {
-  session: SessionType;
-  startSession: (role: string, sessionId?: string) => void;
+  images: string[],
+  saveImageWithBlobUtil: (imageUrl: string) => void;
 }
 
 export const ImageContext = createContext<ImageProviderType>({
-  session: {sessionId: 'test 12'},
-  startSession: () => ({})
+  images: [],
+  saveImageWithBlobUtil: () => ({})
 });
 
 
-export default function ImageContextProvider({children}: PropsWithChildren) {
-  const [session, setSession] = useState<SessionType>({sessionId: 'tesinsession id'});
-  const appId = 'appid'
+const ImageProvider = ({children}: PropsWithChildren) => {
+  const [savedImagePath, setSavedImagePath] = useState('');
+  const [images, setImages] = useState<string[]>([])
 
-  const startSession = async(role: string, receiverSessionId?: string) => {
-    console.log(role);
-    
-    const newSession: SessionType = {appId: appId, role: role}
-    const jwt = await signInAnonymously();
-    const sessionId = getSessionId(jwt);
-    newSession.jwt = jwt;
-    newSession.sessionId = sessionId;
-    console.log("startsession", receiverSessionId);
-    if(role == 'receiver') {
-      const sessionIds = await getSessionIdsFromLocalStorage();
-      newSession.sessionIds = sessionIds ? [...sessionIds, sessionId] : [sessionId]
-      await saveSessionToStorage(newSession);
-    } else {
-      newSession.receiverSessionId = receiverSessionId
+  const saveImageWithBlobUtil = async (imageUrl: string) => {
+    const fileName = `share_your_cam_${Date.now()}.jpg`;
+    try {
+      // Request permissions for Android
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permission denied');
+          return;
+        }
+      }
+
+      const { config, fs } = ReactNativeBlobUtil;
+      const downloads = fs.dirs.DownloadDir; // Android
+      const documents = fs.dirs.DocumentDir; // iOS
+      
+      const path = Platform.OS === 'ios' ? documents : downloads;
+      const filePath = `${path}/${fileName}`;
+
+      const configOptions = Platform.select({
+        ios: {
+          fileCache: true,
+          path: filePath,
+        },
+        android: {
+          fileCache: true,
+          path: filePath,
+          addAndroidDownloads: {
+            useDownloadManager: true,
+            notification: true,
+            path: filePath,
+            description: 'Downloading image...',
+          },
+        },
+      });
+
+      const response = await config(configOptions!).fetch('GET', imageUrl);
+      
+      if (Platform.OS === 'ios') {
+        Alert.alert('Success', `Image saved to: ${response.path()}`);
+      } else {
+        Alert.alert('Success', 'Image downloaded successfully!');
+      }
+      
+      console.log(response.path());
+      const savedImagePath: string = response.path();
+      console.log("savedImagePath", savedImagePath);
+      if(savedImagePath) setImages([...images, savedImagePath])
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      Alert.alert('Error', 'Failed to download image');
     }
-    setSession(newSession);
-    
-  }
+  };
+
   return (
-    <ImageContext.Provider value={{session, startSession}}>
+    <ImageContext.Provider value={{saveImageWithBlobUtil, images}}>
       {children}
     </ImageContext.Provider>
 
   )
 }
+
+export default ImageProvider;
+
+export const useImage = () => useContext(ImageContext)

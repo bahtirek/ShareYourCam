@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Image, Text, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCodeGenerator from '@/components/receiver/QrCodeGenerator';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -6,15 +6,23 @@ import { useSession } from '@/providers/SessionProvider';
 import { supabase } from "@/lib/supabase";
 import AlertModal from '@components/common/AlertModal';
 import { router, useFocusEffect } from 'expo-router';
+import { useImage } from '@/providers/ImagesProvider';
+import SavedImages from "@components/receiver/Images"
 
 export default function HomeScreen() {
   const { session, startSession, isInitialized } = useSession();
-  const [isSessionStarted, setIsSessionStarted] = useState(false)
+  const [showQRCode, setShowQRCode] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [image, setImage] = useState('');
+  const [generatingQRCode, setGeneratingQRCode] = useState(true);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showImages, setShowImages] = useState(false);
+  const {saveImageWithBlobUtil, images} = useImage()
 
   useEffect(() => {
     setSession();
     listenForImages();
+    setIsIOS(Platform.OS === 'ios')
   }, [])
 
   useFocusEffect(
@@ -24,20 +32,18 @@ export default function HomeScreen() {
   );
 
   const setSession = async() => {
-    setIsSessionStarted(false)
+    setShowQRCode(false)
     const result = await startSession('sharer');
-    console.log("result", result);
+    setGeneratingQRCode(false);
     
     if (result) {
-      setIsSessionStarted(true)
+      setShowQRCode(true);
     } else {
       setShowAlertModal(true);
     }
   }
 
-  const listenForImages = () => {
-    console.log('listening');
-    
+  const listenForImages = () => {   
     const images = supabase.channel('custom-insert-channel')
       .on(
         'postgres_changes',
@@ -48,11 +54,25 @@ export default function HomeScreen() {
         },
         (payload) => {
           console.log('Change received!', payload)
-          
+          downloadImage(payload)
         }
       )
       .subscribe()
+  }
 
+  const downloadImage = async (payload: any) => {
+    const { data, error } = await supabase.storage
+      .from('images')
+      .createSignedUrl(payload.new.url, 3600)
+    if (data) {
+      setImage(data.signedUrl)
+      //saveImageWithBlobUtil(data.signedUrl)
+      setShowQRCode(false);
+      setGeneratingQRCode(false);
+      setShowImages(true)
+    } else {
+      console.log("createSignedUrl error", error)
+    }
   }
 
   return (
@@ -60,13 +80,16 @@ export default function HomeScreen() {
       <View className='h-full justify-between items-center'>
         <View className='h-full w-full justify-center items-center'>
           {
-            !isSessionStarted &&
+            generatingQRCode &&
             <View className='pt-20'>
               <Text className='text-lg text-center -mb-8'>Generating QR code...</Text>
+              <Image source={{uri: image}}
+                className='!w-28 !h-28'
+                resizeMode='cover' />
             </View>
           }
           {
-            isSessionStarted &&
+            showQRCode &&
             <View>
               <View>
                 <Text className='text-lg text-center -mb-8'>Connect to sharer</Text>
@@ -75,6 +98,10 @@ export default function HomeScreen() {
                 <QRCodeGenerator text={session.sessionId} />
               </View>
             </View>
+          }
+          {
+            showImages &&
+            <SavedImages images={images} />
           }
         </View>
       </View>

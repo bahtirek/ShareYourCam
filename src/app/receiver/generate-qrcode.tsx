@@ -14,7 +14,6 @@ export default function HomeScreen() {
 
   useEffect(() => {
     setSession();
-    listenForImages();
   }, [])
 
   useFocusEffect(
@@ -26,10 +25,10 @@ export default function HomeScreen() {
   const setSession = async() => {
     setIsSessionStarted(false)
     const result = await startSession('sharer');
-    console.log("result", result);
     
     if (result) {
       setIsSessionStarted(true)
+      listenForImages();
     } else {
       setShowAlertModal(true);
     }

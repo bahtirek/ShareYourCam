@@ -60,24 +60,22 @@ const SessionProvider = ({children}: PropsWithChildren) => {
 
   const startSession = async(role: string, receiverSessionId?: string) => {
     const { sessionData, sessionError } = await getSession();
-
+    
     if(sessionData.session) {
       await startNewSession(sessionData, role, receiverSessionId);
       return true
-    } 
-
+    }
+    
     const { newSessionData, newSessionError } = await signInAnonymously();
     if (newSessionData.session) {
-      await startNewSession(sessionData, role)
+      await startNewSession(newSessionData, role)
       return true
     }
 
     return false
   }
 
-  const startNewSession = async(jwt: any,role: string, receiverSessionId?: string) => {
-    //console.log("jwt",jwt);
-    
+  const startNewSession = async(jwt: any,role: string, receiverSessionId?: string) => {    
     const newSession: SessionType = {appId: appId, role: role}
     const sessionId = getSessionId(jwt.session.access_token);
     newSession.jwt = jwt;

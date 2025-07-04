@@ -20,6 +20,8 @@ const ImageProvider = ({children}: PropsWithChildren) => {
 
   const saveImageWithBlobUtil = async (imageUrl: string) => {
     const fileName = `share_your_cam_${Date.now()}.jpg`;
+    console.log("fileName", fileName);
+    
     try {
       // Request permissions for Android
       if (Platform.OS === 'android') {

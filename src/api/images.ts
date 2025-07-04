@@ -10,7 +10,6 @@ export const insertImageData = async (receiverSessionId: string, url: string) =>
     if(error) {
       throw new Error(error.message);
     }
-    console.log("insertImageData", data);
          
   return data;
 }

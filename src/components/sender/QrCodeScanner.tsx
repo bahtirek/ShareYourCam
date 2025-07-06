@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
-import { CameraView, Camera, CameraMode, CameraType, } from 'expo-camera';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, ActivityIndicator, PermissionsAndroid, Platform } from 'react-native';
+import { CameraView, Camera, CameraMode, CameraType, PermissionStatus } from 'expo-camera';
 import IconButton from '@components/common/IconButton';
 import icons from '@/constants/Icons';
 import { useFocusEffect } from 'expo-router';
@@ -14,10 +14,20 @@ const QRCodeScanner = ({onScan}: any) => {
   const [active, setActive] = useState(true)
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
+    if(Platform.OS === 'android') {
+      (async () => {
+        const cameraPermissionResult = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA
+        );
+        setHasPermission(cameraPermissionResult === 'granted');
+        console.log('perm status', cameraPermissionResult);
+      })();
+    } else {
+      (async () => {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === 'granted');
+      })();
+    }
   }, []);
 
   useFocusEffect(

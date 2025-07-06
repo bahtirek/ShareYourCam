@@ -1,5 +1,5 @@
-import { Image, Text, View,PermissionsAndroid, Platform, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image, Text, View,PermissionsAndroid, Platform, Alert, StyleSheet } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCodeGenerator from '@/components/receiver/QrCodeGenerator';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from '@/providers/SessionProvider';
@@ -10,6 +10,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import { useImage } from '@/providers/ImagesProvider';
 import SavedImages from "@components/receiver/Images"
 //import * as FileSystem from 'expo-file-system';
+import { StatusBar } from "expo-status-bar";
 import { File, Paths, Directory } from 'expo-file-system/next';
 
 
@@ -21,6 +22,7 @@ export default function HomeScreen() {
   const [generatingQRCode, setGeneratingQRCode] = useState(true);
   const [isIOS, setIsIOS] = useState(false);
   const [showImages, setShowImages] = useState(false);
+  const { top } = useSafeAreaInsets();
   //const {saveImageWithBlobUtil, images} = useImage()
 
   useEffect(() => {
@@ -140,7 +142,7 @@ export default function HomeScreen() {
   } */
 
   return (
-    <SafeAreaView className='h-full w-full'>
+    <SafeAreaView edges={['left', 'right']} className='h-full w-full' style={{flex: 1}}>
       <View className='h-full justify-between items-center'>
         <View className='h-full w-full justify-center items-center'>
           {
@@ -176,6 +178,13 @@ export default function HomeScreen() {
           ]
         }
       ></AlertModal>
+      <StatusBar translucent={false} />
     </SafeAreaView>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+
+  }
+});
+

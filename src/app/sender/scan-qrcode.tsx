@@ -1,4 +1,4 @@
-import { Image, StyleSheet, TouchableOpacity, Text, View, Modal, ActivityIndicator, Alert } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, Text, View, Modal, ActivityIndicator, Alert, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '@constants/Icons';
 import QRCodeScanner from '@/components/sender/QrCodeScanner';
@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useSession } from '@/providers/SessionProvider';
 import { useFocusEffect } from 'expo-router';
 import AlertModal from '@components/common/AlertModal';
+import { StatusBar } from 'expo-status-bar';
 
 export default function HomeScreen() {
   const { session, startSession, setReceiverSessionId } = useSession();
@@ -15,6 +16,15 @@ export default function HomeScreen() {
 
   useEffect(() => {
     setSession()
+    const onBackPress = () => {
+      console.log('back pressed');
+      
+                router.back()
+                return true; // Prevent default behavior
+              };
+
+              BackHandler.addEventListener('hardwareBackPress', onBackPress);
+              
   }, [])
   
   useFocusEffect(
@@ -47,7 +57,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView edges={["left", "right"]} className='h-full bg-white'>
+    <View className='h-full w-full' style={{flex: 1}}>
       <QRCodeScanner onScan={handleScan }/>
       <Modal
         animationType="fade"
@@ -70,7 +80,8 @@ export default function HomeScreen() {
           ]
         }
       ></AlertModal>
-    </SafeAreaView>
+      <StatusBar translucent={false} />
+    </View>
   );
 }
 const styles = StyleSheet.create({

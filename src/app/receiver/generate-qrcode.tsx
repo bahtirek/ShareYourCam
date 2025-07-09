@@ -16,15 +16,9 @@ export default function HomeScreen() {
     setSession();
   }, [])
 
-  useFocusEffect(
-    useCallback(() => {
-      setSession()
-    }, [])
-  );
-
   const setSession = async() => {
     setIsSessionStarted(false)
-    const result = await startSession('sharer');
+    const result = await startSession('receiver');
     
     if (result) {
       setIsSessionStarted(true)

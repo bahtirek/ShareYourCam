@@ -3,6 +3,7 @@ import { createContext, PropsWithChildren, useContext, useEffect, useState } fro
 import { SessionType } from '@/types';
 import { selectAppId, insertAppId } from '@/api/app-id';
 import { signInAnonymously, getSession } from '@/api/auth';
+import { insertSession } from '@/api/sessions';
 import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionIdsFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
 import { getSessionId } from '@/services/JWTServices';
 
@@ -68,6 +69,15 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     
     const { newSessionData, newSessionError } = await signInAnonymously();
     if (newSessionData.session) {
+      const sessionId = getSessionId(newSessionData.session.access_token);
+      await insertSession(sessionId, appId)
+      .then(result => {
+        if (result.success) {
+          console.log(`Session created with ID: ${result.session_id}`)
+        } else {
+          console.log(`Failed: ${result.message}`)
+        }
+      })
       await startNewSession(newSessionData, role)
       return true
     }

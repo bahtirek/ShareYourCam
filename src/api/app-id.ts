@@ -4,7 +4,7 @@ export const insertAppId = async (id: string) => {
   const { data, error }: any = await supabase
     .from('user_app')
     .insert({appId: id})
-    .single()
+    .select()
 
     if(error) {
       throw new Error(error.message);
@@ -15,7 +15,7 @@ export const insertAppId = async (id: string) => {
 export const selectAppId = async (id: string) => {
   const { data, error }: any = await supabase
     .from('user_app')
-    .select('*')
+    .select('id')
     .eq('appId', id)
 
     if(error) {

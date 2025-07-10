@@ -31,8 +31,8 @@ export default function RootLayout() {
       <Stack initialRouteName='index'>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="receiver/generate-qrcode" options={{ headerShown: true, headerTransparent: true, title: 'QR code', headerTintColor: '#FF4416', headerTitleStyle: { color: '#FF4416' } }} />
-        <Stack.Screen name="sender/scan-qrcode" options={{ headerShown: true, headerTransparent: true, title: 'Scan QR code', headerTintColor: '#FFFFFF', headerTitleStyle: { color: '#FF4416' } }} />
-        <Stack.Screen name="sender/camera" options={{ headerShown: false }} />
+        <Stack.Screen name="sender/scan-qrcode" options={{ headerShown: true, headerTransparent: true, title: 'Scan QR code', headerTintColor: '#FF4416', headerTitleStyle: { color: '#FF4416' } }} />
+        <Stack.Screen name="sender/camera" options={{ headerShown: true, headerTransparent: true, title: 'Say cheese', headerTintColor: '#FF4416', headerTitleStyle: { color: '#FF4416' } }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

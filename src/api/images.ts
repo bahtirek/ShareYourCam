@@ -2,17 +2,22 @@ import { supabase } from "@/lib/supabase";
 
 export const insertImageData = async (receiverSessionId: string, url: string) => {
   console.log('inserting image dtat', receiverSessionId, url);
-  
-  const { data, error }: any = await supabase
-    .from('images')
-    .insert({session_id: receiverSessionId, url: url})
-
-    if(error) {
-      throw new Error(error.message);
-    }
-    console.log("insertImageData", data);
          
-  return data;
+  try {
+    const { data, error } = await supabase
+      .rpc('add_image_data', {
+        p_session_id: receiverSessionId,
+        p_url: url
+      })
+    
+    if (error) throw error
+    
+    console.log('Image record created:', data)
+    return data
+  } catch (error) {
+    console.error('Error creating image record:', error)
+    throw error
+  }
 }
 
 export const listenForImages = (sessionId: string): void => {
@@ -32,3 +37,15 @@ export const listenForImages = (sessionId: string): void => {
   )
   .subscribe()
 };
+
+export const getAllImages = async (id: string) => {
+  const { data, error }: any = await supabase
+    .from('user_app')
+    .select('*')
+    .eq('appId', id)
+
+    if(error) {
+      throw new Error(error.message);
+    }
+  return data;
+}

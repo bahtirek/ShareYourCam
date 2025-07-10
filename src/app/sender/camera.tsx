@@ -5,23 +5,25 @@ import { CameraView, CameraCapturedPicture, Camera, CameraMode, CameraType, } fr
 import { useSession } from '@/providers/SessionProvider';
 import { sendImageToReceiver } from '@/services/ImageServices';
 import { insertImageData } from '@/api/images';
+import { router } from 'expo-router';
 
 export default function SenderScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [capturedImage, setCapturedImage] = useState<CameraCapturedPicture | null>(null);
-  const [receiverId, setReceiverId] = useState<string>('');
-  const [isCameraVisible, setIsCameraVisible] = useState<boolean>(true);
   const [isSending, setIsSending] = useState<boolean>(false);
-  const [mode, setMode] = useState<CameraMode>("picture");
   const [facing, setFacing] = useState<CameraType>("back");
   const cameraRef = useRef<CameraView>(null);
-  const { session, startSession } = useSession();
+  const { session, } = useSession();
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
+    if(session.receiverSessionId) {
+      (async () => {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === 'granted');
+      })();
+    } else {
+      router.navigate('/');
+    }
   }, []);
 
   const takePicture = async (): Promise<void> => {
@@ -30,7 +32,6 @@ export default function SenderScreen() {
         const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
         if(!photo) return;
         setCapturedImage(photo);
-        setIsCameraVisible(false);
         sendImage(photo)
       } catch (error) {
         console.error('Error taking picture:', error);
@@ -71,13 +72,15 @@ export default function SenderScreen() {
         <View style={styles.container}>
           {
             !isSending &&
-            <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={takePicture}>
-                  <Text style={styles.text}>take</Text>
+            <View className='h-full'>
+              <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+              </CameraView>
+              <View className='w-full h-20 absolute bottom-16 flex-1 justify-center items-center'>
+                <TouchableOpacity className='w-20 h-20 bg-transparent border-2 rounded-full relative border-white flex justify-center items-center' onPress={takePicture}>
+                  <View className='h-16 w-16 bg-white rounded-full'></View>
                 </TouchableOpacity>
               </View>
-            </CameraView>
+            </View>
           }
           {
             isSending &&

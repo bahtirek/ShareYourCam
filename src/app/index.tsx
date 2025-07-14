@@ -2,14 +2,37 @@ import { Image, StyleSheet, TouchableOpacity, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '@constants/Icons';
 import { router } from 'expo-router';
+import { getAllImages, getImageAsUrls } from '@/api/images';
+import { useEffect, useState } from 'react';
+import { useSession } from '@/providers/SessionProvider';
 
 export default function HomeScreen() {
+  const [signedUrls, setSignedUrls] = useState<any>([])
+  const { session } = useSession();
+    
+  useEffect(() => { 
+    getAllImageURLs()
+  }, [session])
+
   const share = () => {
     router.navigate('/sender/scan-qrcode')
   }
   
   const receive = () => {
     router.navigate('/receiver/generate-qrcode')
+  }
+
+  const getAllImageURLs = async() => {
+    if(session.appId) {
+      const data = await getAllImages(session.appId);
+      const urls = data.data.map((item: any) => item.url)
+      
+      const signedUrlsArray = await getImageAsUrls(urls);
+      console.log("signedUrlsArray", signedUrlsArray);
+      
+      setSignedUrls(signedUrlsArray)
+    }
+    
   }
 
   return (
@@ -43,7 +66,13 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
+        {
+          signedUrls.map((url: any) => {
+            return (
+              <Image source={{uri: url.signedUrl}} className='!w-36 !h-36' key={url.path} />
+            )
+          })
+        }
       </View>
     </SafeAreaView>
   );

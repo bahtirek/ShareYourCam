@@ -38,14 +38,74 @@ export const listenForImages = (sessionId: string): void => {
   .subscribe()
 };
 
-export const getAllImages = async (id: string) => {
-  const { data, error }: any = await supabase
-    .from('user_app')
-    .select('*')
-    .eq('appId', id)
-
-    if(error) {
-      throw new Error(error.message);
+export const getImageAsUrls = async (filePaths: string[]) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('images')
+      .createSignedUrls(filePaths, 3600)
+    
+    if (error) {
+      throw error
     }
-  return data;
+     console.log('urls', data);
+     
+    return data
+  } catch (error) {
+    console.error('Error downloading image:', error)
+    throw error
+  }
+}
+
+export const getImageAsUrl = async (filePath: string) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('images')
+      .createSignedUrl(filePath, 3600)
+    
+    if (error) {
+      throw error
+    }
+    
+    return data.signedUrl
+  } catch (error) {
+    console.error('Error downloading image:', error)
+    throw error
+  }
+}
+
+export const getImageAsBlob = async (filePath: string) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('images')
+      .download(filePath)
+    
+    if (error) {
+      throw error
+    }
+    
+    // data is already a Blob object
+    return data
+  } catch (error) {
+    console.error('Error downloading image:', error)
+    throw error
+  }
+}
+
+export const getAllImages = async (appId: string) => {
+  try {
+    const { data, error } = await supabase
+    .rpc('get_urls_by_app_id', {
+      p_app_id: appId
+    });
+    
+    if (error) {
+      throw error
+    }
+    console.log("images1", data, appId);
+
+    return data
+  } catch (error) {
+    console.error('Error on getting urls:', error)
+    throw error
+  }
 }

@@ -14,24 +14,8 @@ export default function HomeScreen() {
   const [showAlertModal, setShowAlertModal] = useState(false);
 
   useEffect(() => {
-    setSession()
+    
   }, [])
-  
-  useFocusEffect(
-    useCallback(() => {
-      setSession()
-    }, [])
-  );
-
-  const setSession = async() => {
-    setShowLoaderModal(true)
-    const result = await startSession('sharer');
-    if (result) {
-      setShowLoaderModal(false)
-    } else {
-      setShowAlertModal(true);
-    }
-  }
 
   const handleScan = async (sessionId: string) => {
     console.log("data", sessionId);

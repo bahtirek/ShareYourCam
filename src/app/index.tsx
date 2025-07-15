@@ -14,11 +14,15 @@ export default function HomeScreen() {
     getAllImageURLs()
   }, [session])
 
-  const share = () => {
+  const goToScanQrCode = () => {
     router.navigate('/sender/scan-qrcode')
   }
+
+  const goToImages = () => {
+    router.navigate('/receiver/images')
+  }
   
-  const receive = () => {
+  const goToGenerateQrCode = () => {
     router.navigate('/receiver/generate-qrcode')
   }
 
@@ -28,11 +32,8 @@ export default function HomeScreen() {
       const urls = data.data.map((item: any) => item.url)
       
       const signedUrlsArray = await getImageAsUrls(urls);
-      console.log("signedUrlsArray", signedUrlsArray);
-      
       setSignedUrls(signedUrlsArray)
     }
-    
   }
 
   return (
@@ -41,11 +42,11 @@ export default function HomeScreen() {
         <View className='h-full w-full justify-around items-center flex-row'>
           <View>
             <TouchableOpacity
-              onPress={share}
+              onPress={goToScanQrCode}
               className='w-12 h-12 items-center justify-center'
             >
               <Image 
-                source={icons.camera}
+                source={icons.shutter}
                 className='!w-20 !h-14'
                 resizeMode='contain'
               />
@@ -53,26 +54,32 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           <View>
-          <TouchableOpacity
-              onPress={receive}
+            <TouchableOpacity
+              onPress={goToGenerateQrCode}
               className='w-12 h-12 items-center justify-center'
             >
               <Image 
-                source={icons.folder}
+                source={icons.qr_code}
                 className='!w-20 !h-14'
                 resizeMode='contain'
               />
               <Text className='text-md text-center'>Receive</Text>
             </TouchableOpacity>
           </View>
+          <View>
+            <TouchableOpacity
+              onPress={goToImages}
+              className='w-12 h-12 items-center justify-center'
+            >
+              <Image 
+                source={icons.gallery}
+                className='!w-20 !h-14'
+                resizeMode='contain'
+              />
+              <Text className='text-md text-center'>Images</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        {
-          signedUrls.map((url: any) => {
-            return (
-              <Image source={{uri: url.signedUrl}} className='!w-36 !h-36' key={url.path} />
-            )
-          })
-        }
       </View>
     </SafeAreaView>
   );

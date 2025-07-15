@@ -51,7 +51,7 @@ export const getImageAsUrls = async (filePaths: string[]) => {
      
     return data
   } catch (error) {
-    console.error('Error downloading image:', error)
+    console.error('getImageAsUrls, Error downloading image:', error)
     throw error
   }
 }
@@ -68,7 +68,7 @@ export const getImageAsUrl = async (filePath: string) => {
     
     return data.signedUrl
   } catch (error) {
-    console.error('Error downloading image:', error)
+    console.error('getImageAsUrl, Error downloading image:', error)
     throw error
   }
 }
@@ -86,7 +86,7 @@ export const getImageAsBlob = async (filePath: string) => {
     // data is already a Blob object
     return data
   } catch (error) {
-    console.error('Error downloading image:', error)
+    console.error('getImageAsBlob, Error downloading image:', error)
     throw error
   }
 }

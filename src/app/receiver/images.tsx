@@ -1,28 +1,9 @@
-import { Image, StyleSheet, TouchableOpacity, Text, View } from 'react-native';
+import { Image, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import icons from '@constants/Icons';
-import { router } from 'expo-router';
-import { getAllImages, getImageAsUrls } from '@/api/images';
-import { useEffect, useState } from 'react';
-import { useSession } from '@/providers/SessionProvider';
+import { useImage } from '@/providers/ImagesProvider';
 
 export default function HomeScreen() {
-  const [signedUrls, setSignedUrls] = useState<any>([])
-  const { session } = useSession();
-    
-  useEffect(() => { 
-    getAllImageURLs()
-  }, [session])
-
-  const getAllImageURLs = async() => {
-    if(session.appId) {
-      const data = await getAllImages(session.appId);
-      const urls = data.data.map((item: any) => item.url)
-      
-      const signedUrlsArray = await getImageAsUrls(urls);
-      setSignedUrls(signedUrlsArray)
-    }
-  }
+  const { signedUrls } = useImage();
 
   return (
     <SafeAreaView className='w-full'>

@@ -1,49 +1,40 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
-import { SessionType } from '@/types';
-import { selectAppId, insertAppId } from '@/api/app-id';
-import { signInAnonymously } from '@/api/auth';
-import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionIdsFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
-import { getSessionId } from '@/services/JWTServices';
-
+import { getAllImages, getImageAsUrls } from '@/api/images';
+import { useSession } from '@/providers/SessionProvider';
+import { ImageType } from "@/types";
 
 type ImageProviderType = {
-  session: SessionType;
-  startSession: (role: string, sessionId?: string) => void;
+  getAllImageURLs: (appId: string) => void;
+  signedUrls: ImageType[]
 }
 
 export const ImageContext = createContext<ImageProviderType>({
-  session: {sessionId: 'test 12'},
-  startSession: () => ({})
+  getAllImageURLs: () => ({}),
+  signedUrls: []
 });
 
 
-export default function ImageContextProvider({children}: PropsWithChildren) {
-  const [session, setSession] = useState<SessionType>({sessionId: 'tesinsession id'});
-  const appId = 'appid'
+const ImageProvider = ({children}: PropsWithChildren) => { 
+  const [signedUrls, setSignedUrls] = useState<any>([])
 
-  const startSession = async(role: string, receiverSessionId?: string) => {
-    console.log(role);
-    
-    const newSession: SessionType = {appId: appId, role: role}
-    const jwt = await signInAnonymously();
-    const sessionId = getSessionId(jwt);
-    newSession.jwt = jwt;
-    newSession.sessionId = sessionId;
-    console.log("startsession", receiverSessionId);
-    if(role == 'receiver') {
-      const sessionIds = await getSessionIdsFromLocalStorage();
-      newSession.sessionIds = sessionIds ? [...sessionIds, sessionId] : [sessionId]
-      await saveSessionToStorage(newSession);
-    } else {
-      newSession.receiverSessionId = receiverSessionId
+  const getAllImageURLs = async(appId: string) => {
+    if(appId) {
+      const data = await getAllImages(appId);
+      const urls = data.data.map((item: any) => item.url)
+      
+      if(urls && urls.length > 0 ) {
+        const signedUrlsArray = await getImageAsUrls(urls);
+        setSignedUrls(signedUrlsArray)
+      }
     }
-    setSession(newSession);
-    
-  }
+  }  
   return (
-    <ImageContext.Provider value={{session, startSession}}>
+    <ImageContext.Provider value={{getAllImageURLs, signedUrls}}>
       {children}
     </ImageContext.Provider>
-
   )
 }
+
+export default ImageProvider;
+
+export const useImage = () => useContext(ImageContext)

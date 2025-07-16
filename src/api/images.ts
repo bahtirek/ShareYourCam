@@ -47,7 +47,6 @@ export const getImageAsUrls = async (filePaths: string[]) => {
     if (error) {
       throw error
     }
-     console.log('urls', data);
      
     return data
   } catch (error) {
@@ -101,7 +100,6 @@ export const getAllImages = async (appId: string) => {
     if (error) {
       throw error
     }
-    console.log("images1", data, appId);
 
     return data
   } catch (error) {

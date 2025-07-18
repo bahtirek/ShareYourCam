@@ -2,6 +2,7 @@ export type SessionType = {
   appId?: string,
   sessionId?: string,
   sessionIds?: string[],
+  sessionDBId?: number,
   jwt?: any,
   receiverSessionId?: string
 }

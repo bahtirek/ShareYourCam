@@ -30,6 +30,7 @@ export default function HomeScreen() {
   const setSession = async() => {
     setIsSessionStarted(false)
     const result = await startSession();
+    console.log("setSession",result);
     
     if (result) {
       setIsSessionStarted(true)
@@ -40,7 +41,7 @@ export default function HomeScreen() {
   }
 
   const listenForImages = () => {
-    console.log('listening');
+    console.log('listening', session);
     
     const images = supabase.channel('custom-insert-channel')
       .on(
@@ -48,7 +49,8 @@ export default function HomeScreen() {
         { 
           event: 'INSERT', 
           schema: 'public', 
-          table: 'images'
+          table: 'images',
+          filter: `sessions_id=eq.${session.sessionDBId}`
         },
         (payload) => {
           console.log('Change received!', payload)

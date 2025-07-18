@@ -1,15 +1,16 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { getAllImages, getImageAsUrls } from '@/api/images';
-import { useSession } from '@/providers/SessionProvider';
 import { ImageType } from "@/types";
 
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
+  addImageURLs: (imageData: ImageType) => void;
   signedUrls: ImageType[]
 }
 
 export const ImageContext = createContext<ImageProviderType>({
   getAllImageURLs: () => ({}),
+  addImageURLs: () => ({}),
   signedUrls: []
 });
 
@@ -27,9 +28,14 @@ const ImageProvider = ({children}: PropsWithChildren) => {
         setSignedUrls(signedUrlsArray)
       }
     }
-  }  
+  }
+
+  const addImageURLs = async (imageData: ImageType) => {
+    setSignedUrls((prevUrls: ImageType[]) => [...prevUrls, imageData])
+  }
+
   return (
-    <ImageContext.Provider value={{getAllImageURLs, signedUrls}}>
+    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, signedUrls}}>
       {children}
     </ImageContext.Provider>
   )

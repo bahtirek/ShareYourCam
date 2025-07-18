@@ -63,9 +63,10 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     if(!session.appId) await verifyAppId;
     do {
       UUID = Crypto.randomUUID();
-      result = await insertSession(UUID, session.appId!);      
+      result = await insertSession(UUID, session.appId!);
+
+      if(result.success) return {sessionId: UUID, sessionDBId: result.session_id}
     } while (!result.success);
-    return UUID;
   }
 
   const startSession = async() => {
@@ -74,9 +75,10 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     if(!sessionData.session) await signInAnonymously();
 
     if(!session.sessionId) {
-      const sessionId = await generateSessionId();
-      setSession({...session, sessionId})
-      return sessionId
+      const sessionData = await generateSessionId();
+      setSession({...session, sessionId: sessionData?.sessionId, sessionDBId: sessionData?.sessionDBId})
+
+      return sessionData?.sessionId
     } else {
       return session.sessionId
     }

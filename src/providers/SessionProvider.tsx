@@ -9,14 +9,14 @@ import { saveAppIdToStorage, getAppIdFromStorage } from "@/api/storage";
 
 type SessionProviderType = {
   session: SessionType;
-  startSession: () => Promise<string | undefined>;
+  startSession: () => Promise<SessionType | undefined>;
   setReceiverSessionId: (receiverSessionId: string) => void;
   isInitialized: boolean;
 }
 
 export const SessionContext = createContext<SessionProviderType>({
   session: {sessionId: 'test'},
-  startSession: (async () => ('')),
+  startSession: (async () => ({})),
   setReceiverSessionId: () => ({}),
   isInitialized: false
 });
@@ -78,9 +78,9 @@ const SessionProvider = ({children}: PropsWithChildren) => {
       const sessionData = await generateSessionId();
       setSession({...session, sessionId: sessionData?.sessionId, sessionDBId: sessionData?.sessionDBId})
 
-      return sessionData?.sessionId
+      return sessionData
     } else {
-      return session.sessionId
+      return session
     }
   }
 

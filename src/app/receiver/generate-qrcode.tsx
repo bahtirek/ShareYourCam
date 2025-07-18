@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import AlertModal from '@components/common/AlertModal';
 import { router, useFocusEffect } from 'expo-router';
 import { getImageAsBlob, getImageAsUrl } from '@/api/images';
+import { useImage } from '@/providers/ImagesProvider';
 
 type ImageSrcType = {
   uri: string
@@ -17,6 +18,7 @@ export default function HomeScreen() {
   const [isSessionStarted, setIsSessionStarted] = useState(false)
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [imageSource, setImageSource] = useState<ImageSrcType>();
+  const { listenForImages } = useImage();
 
   useEffect(() => {
     setSession();
@@ -30,34 +32,13 @@ export default function HomeScreen() {
   const setSession = async() => {
     setIsSessionStarted(false)
     const result = await startSession();
-    console.log("setSession",result);
     
     if (result) {
-      setIsSessionStarted(true)
-      listenForImages();
+      setIsSessionStarted(true)      
+      listenForImages(result.sessionDBId!);
     } else {
       setShowAlertModal(true);
     }
-  }
-
-  const listenForImages = () => {
-    console.log('listening', session);
-    
-    const images = supabase.channel('custom-insert-channel')
-      .on(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'images',
-          filter: `sessions_id=eq.${session.sessionDBId}`
-        },
-        (payload) => {
-          console.log('Change received!', payload)
-          displayImage(payload.new.url)
-        }
-      )
-      .subscribe()
   }
 
   const imageCleanup = () => {

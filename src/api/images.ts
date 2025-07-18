@@ -20,22 +20,8 @@ export const insertImageData = async (receiverSessionId: string, url: string) =>
   }
 }
 
-export const listenForImages = (sessionId: string): void => {
-  const images = supabase.channel('custom-insert-channel')
-  .on(
-    'postgres_changes',
-    { 
-      event: 'INSERT', 
-      schema: 'public', 
-      table: 'images',
-      filter: `session_id=eq.${sessionId}`
-    },
-    (payload) => {
-      console.log('Change received!', payload)
-      return payload
-    }
-  )
-  .subscribe()
+export const listenImagesChannel = () => {
+  return supabase.channel('custom-insert-channel')
 };
 
 export const getImageAsUrls = async (filePaths: string[]) => {
@@ -47,6 +33,7 @@ export const getImageAsUrls = async (filePaths: string[]) => {
     if (error) {
       throw error
     }
+     console.log('urls', data);
      
     return data
   } catch (error) {
@@ -100,6 +87,7 @@ export const getAllImages = async (appId: string) => {
     if (error) {
       throw error
     }
+    console.log("images1", data, appId);
 
     return data
   } catch (error) {

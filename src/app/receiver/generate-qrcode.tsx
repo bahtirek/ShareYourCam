@@ -41,7 +41,9 @@ export default function HomeScreen() {
 
   useEffect(() => {
     console.log('imageReceivingStarted', imageReceivingStarted);
-    router.navigate('/receiver/images');
+    if(imageReceivingStarted) {
+      router.navigate('/receiver/images');
+    }
   }, [imageReceivingStarted])
 
   const setSession = async() => {

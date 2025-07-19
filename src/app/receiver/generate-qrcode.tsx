@@ -18,16 +18,31 @@ export default function HomeScreen() {
   const [isSessionStarted, setIsSessionStarted] = useState(false)
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [imageSource, setImageSource] = useState<ImageSrcType>();
-  const { listenForImages } = useImage();
+  const { listenForImages, imageReceivingStarted, resetImageReceiving } = useImage();
 
   useEffect(() => {
     setSession();
-
-    // Cleanup: revoke the object URL when the component unmounts
+    resetImageReceiving();
     return () => {
+      // Cleanup: revoke the object URL when the component unmounts
       imageCleanup()
     };
   }, [])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      resetImageReceiving();
+      return () => {
+        // Do something when the screen is unfocused
+        // Useful for cleanup functions
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    console.log('imageReceivingStarted', imageReceivingStarted);
+    router.navigate('/receiver/images');
+  }, [imageReceivingStarted])
 
   const setSession = async() => {
     setIsSessionStarted(false)

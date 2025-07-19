@@ -7,6 +7,8 @@ type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
   listenForImages: (sessionId: number) => void;
   addImageURLs: (imageData: ImageType) => void;
+  resetImageReceiving: () => void;
+  imageReceivingStarted: boolean
   signedUrls: ImageType[]
 }
 
@@ -14,12 +16,15 @@ export const ImageContext = createContext<ImageProviderType>({
   getAllImageURLs: () => ({}),
   listenForImages: () => ({}),
   addImageURLs: () => ({}),
-  signedUrls: []
+  resetImageReceiving: () => ({}),
+  signedUrls: [],
+  imageReceivingStarted: false
 });
 
 
 const ImageProvider = ({children}: PropsWithChildren) => { 
   const [signedUrls, setSignedUrls] = useState<any>([])
+  const [imageReceivingStarted, setImageReceivingStarted] = useState(false)
   let navigation = false;
 
   const getAllImageURLs = async(appId: string) => {
@@ -49,19 +54,14 @@ const ImageProvider = ({children}: PropsWithChildren) => {
         },
         (payload) => {
           console.log('Change received!', payload);
-          navigateToImages()
+          setImageReceivingStarted(true);
         }
       )
       .subscribe()
   }
 
-  const navigateToImages = () => {
-    if(!navigation) {
-      router.navigate('/receiver/images')
-      navigation = true;
-      console.log('navigated to images');
-      
-    }
+  const resetImageReceiving = () => {
+    setImageReceivingStarted(false)
   }
 
   const addImageURLs = async (imageData: ImageType) => {
@@ -69,7 +69,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   }
 
   return (
-    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, signedUrls}}>
+    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, signedUrls, imageReceivingStarted}}>
       {children}
     </ImageContext.Provider>
   )

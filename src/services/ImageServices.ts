@@ -7,15 +7,12 @@ type SendResult = {
 }
 
 // Actual implementation using Firebase
-export const sendImageToReceiver = async (
+export const uploadImageToBucket = async (
   imageUri: string,
   receiverSessionId: string
 ): Promise<SendResult> => {
   try {
-    // Convert image URI to blob
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
-    const arrayBuffer = await new Response(blob).arrayBuffer();
+    const imageArrayBuffer = await convertImageUriToBlob(imageUri);       
 
     // Generate a unique file name
     const filename = `${receiverSessionId}/${Date.now()}.jpg`;
@@ -23,7 +20,7 @@ export const sendImageToReceiver = async (
     const { data, error } = await supabase
       .storage
       .from('images')
-      .upload(filename, arrayBuffer, { contentType: 'image/jpeg', upsert: false });
+      .upload(filename, imageArrayBuffer, { contentType: 'image/jpeg', upsert: false });
 
     console.log("storage data ",data);
     console.log("error", error);
@@ -44,3 +41,11 @@ export const sendImageToReceiver = async (
     };
   }
 };
+
+
+export const convertImageUriToBlob = async(imageUri: string) => {
+  const response = await fetch(imageUri);
+  const blob = await response.blob();
+  const arrayBuffer = await new Response(blob).arrayBuffer();
+  return arrayBuffer;
+}

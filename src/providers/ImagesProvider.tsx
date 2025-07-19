@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
-import { getAllImages, getImageAsUrls, listenImagesChannel } from '@/api/images';
+import { getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
 import { ImageType } from "@/types";
 import { router } from "expo-router";
 
@@ -55,9 +55,15 @@ const ImageProvider = ({children}: PropsWithChildren) => {
         (payload) => {
           console.log('Change received!', payload);
           setImageReceivingStarted(true);
+          getNewImageSignedUrl(payload.new.url)
         }
       )
       .subscribe()
+  }
+    
+  const getNewImageSignedUrl = async (url: string) => {
+    const signedUrl = await getImageAsUrl(url);  
+    setSignedUrls((prevURLs: ImageType[]) => [...prevURLs, signedUrl]);
   }
 
   const resetImageReceiving = () => {

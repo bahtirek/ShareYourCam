@@ -52,7 +52,7 @@ export const getImageAsUrl = async (filePath: string) => {
       throw error
     }
     
-    return data.signedUrl
+    return data
   } catch (error) {
     console.error('getImageAsUrl, Error downloading image:', error)
     throw error

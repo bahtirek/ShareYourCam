@@ -1,8 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-export const insertImageData = async (receiverSessionId: string, url: string) => {
-  console.log('inserting image dtat', receiverSessionId, url);
-         
+export const insertImageData = async (receiverSessionId: string, url: string) => { 
   try {
     const { data, error } = await supabase
       .rpc('add_image_data', {
@@ -12,7 +10,6 @@ export const insertImageData = async (receiverSessionId: string, url: string) =>
     
     if (error) throw error
     
-    console.log('Image record created:', data)
     return data
   } catch (error) {
     console.error('Error creating image record:', error)
@@ -24,16 +21,15 @@ export const listenImagesChannel = () => {
   return supabase.channel('custom-insert-channel')
 };
 
-export const getImageAsUrls = async (filePaths: string[]) => {
+export const getImageAsUrls = async (filePaths: string[], storage: string) => {
   try {
     const { data, error } = await supabase.storage
-      .from('images')
+      .from(storage)
       .createSignedUrls(filePaths, 3600)
     
     if (error) {
       throw error
     }
-     console.log('urls', data);
      
     return data
   } catch (error) {
@@ -42,10 +38,10 @@ export const getImageAsUrls = async (filePaths: string[]) => {
   }
 }
 
-export const getImageAsUrl = async (filePath: string) => {
+export const getImageAsUrl = async (filePath: string, storage: string) => {
   try {
     const { data, error } = await supabase.storage
-      .from('images')
+      .from(storage)
       .createSignedUrl(filePath, 3600)
     
     if (error) {
@@ -68,8 +64,7 @@ export const getImageAsBlob = async (filePath: string) => {
     if (error) {
       throw error
     }
-    
-    // data is already a Blob object
+
     return data
   } catch (error) {
     console.error('getImageAsBlob, Error downloading image:', error)
@@ -87,7 +82,6 @@ export const getAllImages = async (appId: string) => {
     if (error) {
       throw error
     }
-    console.log("images1", data, appId);
 
     return data
   } catch (error) {

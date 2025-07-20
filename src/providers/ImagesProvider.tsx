@@ -9,7 +9,8 @@ type ImageProviderType = {
   addImageURLs: (imageData: ImageType) => void;
   resetImageReceiving: () => void;
   imageReceivingStarted: boolean
-  signedUrls: ImageType[]
+  signedUrls: ImageType[],
+  signedThumbnailUrls: ImageType[],
 }
 
 export const ImageContext = createContext<ImageProviderType>({
@@ -18,12 +19,14 @@ export const ImageContext = createContext<ImageProviderType>({
   addImageURLs: () => ({}),
   resetImageReceiving: () => ({}),
   signedUrls: [],
+  signedThumbnailUrls: [],
   imageReceivingStarted: false
 });
 
 
 const ImageProvider = ({children}: PropsWithChildren) => { 
   const [signedUrls, setSignedUrls] = useState<any>([])
+  const [signedThumbnailUrls, setSignedThumbnailUrls] = useState<any>([])
   const [imageReceivingStarted, setImageReceivingStarted] = useState(false)
   let navigation = false;
 
@@ -33,7 +36,9 @@ const ImageProvider = ({children}: PropsWithChildren) => {
       const urls = data.data.map((item: any) => item.url)
       
       if(urls && urls.length > 0 ) {
-        const signedUrlsArray = await getImageAsUrls(urls);
+        const signedThumbnailUrlsArray = await getImageAsUrls(urls, 'thumbnails');
+        const signedUrlsArray = await getImageAsUrls(urls, 'images');
+        setSignedThumbnailUrls(signedThumbnailUrlsArray)
         setSignedUrls(signedUrlsArray)
       }
     }
@@ -62,8 +67,10 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   }
     
   const getNewImageSignedUrl = async (url: string) => {
-    const signedUrl = await getImageAsUrl(url);  
-    setSignedUrls((prevURLs: ImageType[]) => [...prevURLs, signedUrl]);
+    const signedThumbnailUrl = await getImageAsUrl(url, 'thumbnails'); 
+    const signedUrl = await getImageAsUrl(url, 'images'); 
+    setSignedThumbnailUrls((prevURLs: ImageType[]) => [...prevURLs, signedUrl]);
+    setSignedUrls((prevURLs: ImageType[]) => [...prevURLs, signedThumbnailUrl]);
   }
 
   const resetImageReceiving = () => {
@@ -75,7 +82,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   }
 
   return (
-    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, signedUrls, imageReceivingStarted}}>
+    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
       {children}
     </ImageContext.Provider>
   )

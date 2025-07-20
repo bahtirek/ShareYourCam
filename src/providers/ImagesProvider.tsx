@@ -1,7 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
 import { ImageType } from "@/types";
-import { router } from "expo-router";
 
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
@@ -69,8 +68,8 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   const getNewImageSignedUrl = async (url: string) => {
     const signedThumbnailUrl = await getImageAsUrl(url, 'thumbnails'); 
     const signedUrl = await getImageAsUrl(url, 'images'); 
-    setSignedThumbnailUrls((prevURLs: ImageType[]) => [...prevURLs, signedUrl]);
-    setSignedUrls((prevURLs: ImageType[]) => [...prevURLs, signedThumbnailUrl]);
+    setSignedThumbnailUrls((prevURLs: ImageType[]) => [...prevURLs, signedThumbnailUrl]);
+    setSignedUrls((prevURLs: ImageType[]) => [...prevURLs, signedUrl]);
   }
 
   const resetImageReceiving = () => {

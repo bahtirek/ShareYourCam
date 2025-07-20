@@ -64,7 +64,7 @@ export default function HomeScreen() {
     }
   }
 
-  const displayImage = async (url: string) => {
+/*   const displayImage = async (url: string) => {
     imageCleanup()
     try {
     const imageUrl = await getImageAsUrl(url)
@@ -78,7 +78,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Failed to display image:', error)
     }
-  }
+  } */
 
   const downloadImage = async (url: string) => {
     imageCleanup()

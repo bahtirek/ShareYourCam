@@ -2,26 +2,24 @@ import * as Crypto from 'expo-crypto';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { SessionType } from '@/types';
 import { selectAppId, insertAppId } from '@/api/app-id';
-import { signInAnonymously, getSession } from '@/api/auth';
+import { signInAnonymously, getAuthSession } from '@/api/auth';
 import { insertSession } from '@/api/sessions';
-import { saveSessionToStorage, deleteAppIdInStorage, saveAppIdToStorage, getSessionIdsFromLocalStorage, getAppIdFromStorage } from "@/api/storage";
-import { getSessionId } from '@/services/JWTServices';
+import { saveAppIdToStorage, getAppIdFromStorage } from "@/api/storage";
+
 
 type SessionProviderType = {
   session: SessionType;
-  startSession: (role: string, sessionId?: string) => Promise<boolean>;
+  startSession: () => Promise<SessionType | undefined>;
   setReceiverSessionId: (receiverSessionId: string) => void;
   isInitialized: boolean;
 }
 
 export const SessionContext = createContext<SessionProviderType>({
   session: {sessionId: 'test'},
-  startSession: (async () => (false)),
+  startSession: (async () => ({})),
   setReceiverSessionId: () => ({}),
   isInitialized: false
 });
-
-//const jwt = {"session": {"access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InREWExOdXRDa1VDUGVHb00iLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2xkbnRzbWN3bHB5d3p3cW11bXJkLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI1YzQ2OGMwNy00MjA5LTQwNjUtYTg0NC01Y2NkMzBjZmQzMjMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ3NTk3OTEyLCJpYXQiOjE3NDc1OTQzMTIsImVtYWlsIjoiIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnt9LCJ1c2VyX21ldGFkYXRhIjp7fSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJhbm9ueW1vdXMiLCJ0aW1lc3RhbXAiOjE3NDc1OTQzMTJ9XSwic2Vzc2lvbl9pZCI6IjZlOGJkODY0LTc0Y2MtNDM4Ny04ZGQ0LWJjYTNlODVhNTEzYyIsImlzX2Fub255bW91cyI6dHJ1ZX0.tTCA3BDAqMjyDlScj-5IEzVn8VW1hJzIpcK5Bli97Mw", "expires_at": 1747597912, "expires_in": 3600, "refresh_token": "g35fodjzbyos", "token_type": "bearer", "user": {"app_metadata": [Object], "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [Array], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": [Object]}}, "user": {"app_metadata": {}, "aud": "authenticated", "created_at": "2025-05-18T18:51:52.319674Z", "email": "", "id": "5c468c07-4209-4065-a844-5ccd30cfd323", "identities": [], "is_anonymous": true, "last_sign_in_at": "2025-05-18T18:51:52.321690727Z", "phone": "", "role": "authenticated", "updated_at": "2025-05-18T18:51:52.323397Z", "user_metadata": {}}}
 
 const SessionProvider = ({children}: PropsWithChildren) => {
   const [session, setSession] = useState<SessionType>({});
@@ -38,11 +36,12 @@ const SessionProvider = ({children}: PropsWithChildren) => {
       
       if(appIdFromStorage != null) {
         appId = appIdFromStorage
+        setSession((prevSession) => ({ ...prevSession, appId: appId }))
       } else {
         const UUID = await generateAppId();
         await insertAppId(UUID);
         await saveAppIdToStorage(UUID);
-        setSession({appId: UUID})
+        setSession((prevSession) => ({ ...prevSession, appId: UUID }))
       }
     } catch (e) {
       console.log(e);
@@ -59,48 +58,30 @@ const SessionProvider = ({children}: PropsWithChildren) => {
     return UUID;
   }
 
-  const startSession = async(role: string, receiverSessionId?: string) => {
-    const { sessionData, sessionError } = await getSession();
-    
-    if(sessionData.session) {
-      await startNewSession(sessionData, role, receiverSessionId);
-      return true
-    }
-    
-    const { newSessionData, newSessionError } = await signInAnonymously();
-    if (newSessionData.session) {
-      const sessionId = getSessionId(newSessionData.session.access_token);
-      await insertSession(sessionId, appId)
-      .then(result => {
-        if (result.success) {
-          console.log(`Session created with ID: ${result.session_id}`)
-        } else {
-          console.log(`Failed: ${result.message}`)
-        }
-      })
-      await startNewSession(newSessionData, role)
-      return true
-    }
+  const generateSessionId = async () => {
+    let UUID, result;
+    if(!session.appId) await verifyAppId;
+    do {
+      UUID = Crypto.randomUUID();
+      result = await insertSession(UUID, session.appId!);
 
-    return false
+      if(result.success) return {sessionId: UUID, sessionDBId: result.session_id}
+    } while (!result.success);
   }
 
-  const startNewSession = async(jwt: any,role: string, receiverSessionId?: string) => {    
-    const newSession: SessionType = {appId: appId, role: role}
-    const sessionId = getSessionId(jwt.session.access_token);
-    newSession.jwt = jwt;
-    newSession.sessionId = sessionId;
+  const startSession = async() => {
+    const { sessionData, sessionError } = await getAuthSession();
     
-    if(role == 'receiver') {
-      const sessionIds = await getSessionIdsFromLocalStorage();
-      newSession.sessionIds = sessionIds ? [...sessionIds, sessionId] : [sessionId]
-      await saveSessionToStorage(newSession);
+    if(!sessionData.session) await signInAnonymously();
+
+    if(!session.sessionId) {
+      const sessionData = await generateSessionId();
+      setSession({...session, sessionId: sessionData?.sessionId, sessionDBId: sessionData?.sessionDBId})
+
+      return sessionData
     } else {
-      newSession.receiverSessionId = receiverSessionId
+      return session
     }
-    setSession(newSession);
-    
-    return true
   }
 
   const setReceiverSessionId = (receiverSessionId: string) => {

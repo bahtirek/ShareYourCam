@@ -5,6 +5,9 @@ import camera_flat from "../../assets/icons/camera_flat.png";
 import lightbulb_on from "../../assets/icons/lightbulb_on.png";
 import lightbulb_off from "../../assets/icons/lightbulb_off.png";
 import qr_reload from "../../assets/icons/qr_reload.png";
+import qr_code from "../../assets/icons/scan.png";
+import gallery from "../../assets/icons/gallery.png";
+import shutter from "../../assets/icons/shutter.png";
 
 
 export default {
@@ -14,5 +17,8 @@ export default {
   camera_flat,
   lightbulb_off,
   lightbulb_on,
-  qr_reload
+  qr_reload,
+  qr_code,
+  gallery,
+  shutter
 }

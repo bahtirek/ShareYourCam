@@ -5,7 +5,7 @@ export const signInAnonymously = async () => {
     
   return {newSessionData: data, newSessionError: error}
 }
-export const getSession = async () => {
+export const getAuthSession = async () => {
   const { data, error } = await supabase.auth.getSession()
 
   return {sessionData: data, sessionError: error}

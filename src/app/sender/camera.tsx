@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { CameraView, CameraCapturedPicture, Camera, CameraMode, CameraType, } from 'expo-camera';
 import { useSession } from '@/providers/SessionProvider';
-import { sendImageToReceiver } from '@/services/ImageServices';
+import { uploadImageToBucket, uploadThumbnailToBucket } from '@/services/ImageServices';
 import { insertImageData } from '@/api/images';
 import { router } from 'expo-router';
 
@@ -43,13 +43,15 @@ export default function SenderScreen() {
   const sendImage = async (photo: any): Promise<void> => {
     try {
       setIsSending(true);
-      const result = await sendImageToReceiver(photo.uri, session.receiverSessionId!);
+      const filename = `${session.receiverSessionId}/${Date.now()}.jpg`;
+      const imageUploadResult = await uploadImageToBucket(photo.uri, filename);
+      await uploadThumbnailToBucket(photo.uri, filename);
       
-      if (result.success) {
+      if (imageUploadResult.success) {
         Alert.alert('Success', 'Image sent successfully');
-        await insertImageData(session.receiverSessionId!, result.url!)
+        await insertImageData(session.receiverSessionId!, imageUploadResult.url!)
       } else {
-        Alert.alert('Error', result.message || 'Failed to send image');
+        Alert.alert('Error', imageUploadResult.message || 'Failed to send image');
       }
     } catch (error) {
       console.error('Error sending image:', error);

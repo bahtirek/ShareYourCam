@@ -11,7 +11,6 @@ export const insertSession = async (sessionId: string, appId: string) => {
     
     if (error) throw error
     
-    console.log('Session created:', data)
     return data
   } catch (error) {
     console.error('Error creating session:', error)

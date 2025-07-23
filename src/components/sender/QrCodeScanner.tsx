@@ -54,17 +54,19 @@ const QRCodeScanner = ({onScan}: any) => {
     <View className='w-full h-full justify-center items-center flex-1'>
       {
         active &&
-        <CameraView
-          style={styles.camera}
-          facing={facing}
-          mode={mode}
-          enableTorch={torchOn}
-          barcodeScannerSettings={{
-            barcodeTypes: ["qr"],
-          }}
-          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-        >
-          <View className='w-full h-full justify-center items-center flex-1 bg-black/30'>       
+        <View className='w-full h-full justify-center items-center flex-1'>
+          <CameraView
+            style={styles.camera}
+            facing={facing}
+            mode={mode}
+            enableTorch={torchOn}
+            barcodeScannerSettings={{
+              barcodeTypes: ["qr"],
+            }}
+            onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+          >
+          </CameraView>
+          <View className='w-full h-full justify-center items-center flex-1 bg-black/30 absolute'>       
             <Text className='text-md text-center text-white -m-8'>Connect to receiver</Text>
             <View className='border-white w-64 h-64 border-2 mt-12' />
             <View className='mt-12 flex-row'>
@@ -75,7 +77,7 @@ const QRCodeScanner = ({onScan}: any) => {
               )}
             </View>
           </View>
-        </CameraView>
+        </View>
       }
     </View>
   );

@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { createThumbnail } from '@services/ThumbnailService';
 
 type SendResult = {
   success: boolean;
@@ -39,12 +38,11 @@ export const uploadImageToBucket = async (
 };
 
 export const uploadThumbnailToBucket = async (
-  imageUri: string,
+  thumbnailUri: string,
   filename: string
 ): Promise<SendResult> => {
   try {
-    const thumbnail = await createThumbnail(imageUri);
-    const thumbnailArrayBuffer = await convertImageUriToBlob(thumbnail.uri);
+    const thumbnailArrayBuffer = await convertImageUriToBlob(thumbnailUri);
 
     const { data, error } = await supabase
       .storage

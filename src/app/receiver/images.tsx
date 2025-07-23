@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImage } from '@/providers/ImagesProvider';
 import ImageModal from 'react-native-image-modal';
 import React from 'react';
+import ImageWrap from '@/components/receiver/ImageWrap';
 
 export default function HomeScreen() {
   const { signedUrls } = useImage();
@@ -24,13 +25,10 @@ export default function HomeScreen() {
                     resizeMode="cover"
                     modalImageResizeMode="contain"
                     renderImageComponent={({source, resizeMode, style}) => (
-                      <Image
+                      <ImageWrap
                         style={style}
                         source={source}
                         contentFit={resizeMode as ImageContentFit}
-                        transition={1000}
-                        scale-down='none'
-                        allowDownscaling={false}
                       />
                     )}
                   />

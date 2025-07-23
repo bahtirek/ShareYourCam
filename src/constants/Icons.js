@@ -8,6 +8,8 @@ import qr_reload from "../../assets/icons/qr_reload.png";
 import qr_code from "../../assets/icons/scan.png";
 import gallery from "../../assets/icons/gallery.png";
 import shutter from "../../assets/icons/shutter.png";
+import download from "../../assets/icons/download.png";
+import download2 from "../../assets/icons/arrow.png";
 
 
 export default {
@@ -20,5 +22,7 @@ export default {
   qr_reload,
   qr_code,
   gallery,
-  shutter
+  shutter,
+  download,
+  download2,
 }

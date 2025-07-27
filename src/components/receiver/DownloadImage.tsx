@@ -1,15 +1,16 @@
 import { View, Image, TouchableOpacity, ImageSourcePropType } from 'react-native'
 import React from 'react'
 import icons from '@constants/Icons';
+import { saveToMediaLibrary } from '@/services/MediaService';
+
 
 type SourceType = {
-  source: ImageSourcePropType
+  url: string
 }
 
-const DownloadImage = ({source}: SourceType) => {
-  const download = () => {
-    console.log('download', source);
-    
+const DownloadImage = ({url}: SourceType) => {
+  const download = async() => {
+    saveToMediaLibrary(url);
   }
 
   return (

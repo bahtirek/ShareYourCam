@@ -1,5 +1,5 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Image, ImageContentFit } from 'expo-image';
+import { ImageContentFit } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImage } from '@/providers/ImagesProvider';
 import ImageModal from 'react-native-image-modal';
@@ -29,6 +29,7 @@ export default function HomeScreen() {
                         style={style}
                         source={source}
                         contentFit={resizeMode as ImageContentFit}
+                        url={url.signedUrl}
                       />
                     )}
                   />

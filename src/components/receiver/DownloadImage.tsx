@@ -3,9 +3,10 @@ import React from 'react'
 import icons from '@constants/Icons';
 import { saveToMediaLibrary, getUri } from '@/services/MediaService';
 import { shareAsync } from 'expo-sharing';
+import { SignedUrlType } from '@/types';
 
 type SourceType = {
-  url: string
+  url: SignedUrlType
 }
 
 const DownloadImage = ({url}: SourceType) => {

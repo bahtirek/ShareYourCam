@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
-import { ImageType } from "@/types";
+import { ImageType, SignedUrlType } from "@/types";
 
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
@@ -8,8 +8,8 @@ type ImageProviderType = {
   addImageURLs: (imageData: ImageType) => void;
   resetImageReceiving: () => void;
   imageReceivingStarted: boolean
-  signedUrls: ImageType[],
-  signedThumbnailUrls: ImageType[],
+  signedUrls: SignedUrlType[],
+  signedThumbnailUrls: SignedUrlType[],
 }
 
 export const ImageContext = createContext<ImageProviderType>({

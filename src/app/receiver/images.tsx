@@ -5,6 +5,7 @@ import { useImage } from '@/providers/ImagesProvider';
 import ImageModal from 'react-native-image-modal';
 import React from 'react';
 import ImageWrap from '@/components/receiver/ImageWrap';
+import { SignedUrlType } from '@/types';
 
 export default function HomeScreen() {
   const { signedUrls } = useImage();
@@ -15,7 +16,7 @@ export default function HomeScreen() {
         <View className='py-20 w-full'>
           <View className='flex-row w-[304px] m-auto flex-wrap gap-4'>
           {
-            signedUrls.map((url: any, index) => {
+            signedUrls.map((url: SignedUrlType, index) => {
               return (
                 <View style={styles.imageContainer} key={index}>
                   <ImageModal
@@ -29,7 +30,7 @@ export default function HomeScreen() {
                         style={style}
                         source={source}
                         contentFit={resizeMode as ImageContentFit}
-                        url={url.signedUrl}
+                        url={url}
                       />
                     )}
                   />

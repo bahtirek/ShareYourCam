@@ -2,12 +2,13 @@ import { Image, ImageContentFit, ImageStyle } from 'expo-image';
 import React from 'react';
 import { ImageSourcePropType, StyleProp, View } from 'react-native';
 import DownloadImage from './DownloadImage';
+import { SignedUrlType } from '@/types';
 
 type ImageType = {
   style: StyleProp<ImageStyle>,
   source: ImageSourcePropType,
   contentFit: ImageContentFit,
-  url: string
+  url: SignedUrlType
 }
 
 const ImageWrap = ({style, source, contentFit, url}: ImageType) => {

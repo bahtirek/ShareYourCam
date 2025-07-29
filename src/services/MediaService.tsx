@@ -1,7 +1,8 @@
+import { SignedUrlType } from '@/types';
 import  * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
   
-export const saveToMediaLibrary = async(url: string) => {
+export const saveToMediaLibrary = async(url: SignedUrlType) => {
     const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
     if(mediaLibraryPermission.granted) {
         try {
@@ -28,9 +29,9 @@ export const saveToMediaLibrary = async(url: string) => {
     }
 }
 
-export const getUri = async(url: string) => {
+export const getUri = async(url: SignedUrlType) => {
     const filename = `${Date.now()}.jpg`;
     const fileUri = FileSystem.documentDirectory + filename;
-    const { uri } = await FileSystem.downloadAsync(url, fileUri);    
+    const { uri } = await FileSystem.downloadAsync(url.signedUrl, fileUri);    
     return uri
 }

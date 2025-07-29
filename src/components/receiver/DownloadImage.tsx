@@ -1,8 +1,8 @@
-import { View, Image, TouchableOpacity, ImageSourcePropType } from 'react-native'
+import { View, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import icons from '@constants/Icons';
-import { saveToMediaLibrary } from '@/services/MediaService';
-
+import { saveToMediaLibrary, getUri } from '@/services/MediaService';
+import { shareAsync } from 'expo-sharing';
 
 type SourceType = {
   url: string
@@ -10,7 +10,16 @@ type SourceType = {
 
 const DownloadImage = ({url}: SourceType) => {
   const download = async() => {
-    saveToMediaLibrary(url);
+    //show spinner
+    const result = await saveToMediaLibrary(url);
+    //hide spinner
+    if(result && result.success) {
+      //delete from cloud
+    } else {
+      const uri = await getUri(url)
+      await shareAsync(uri)
+      // show modal with option to remove the file from a cloud
+    }
   }
 
   return (

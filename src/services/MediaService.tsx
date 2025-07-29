@@ -1,27 +1,36 @@
 import  * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
   
-export const saveToMediaLibrary = async(url: string, auto: boolean = true) => {
+export const saveToMediaLibrary = async(url: string) => {
     const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
     if(mediaLibraryPermission.granted) {
-    const filename = `${Date.now()}.jpg`;
         try {
             const albumName = 'ShareYourCam';
-            const fileUri = FileSystem.documentDirectory + 'temp_image_file.jpg';
-            const { uri } = await FileSystem.downloadAsync(url, fileUri);
+            const uri = await getUri(url);
             const asset = await MediaLibrary.createAssetAsync(uri);
             const album = await MediaLibrary.getAlbumAsync(albumName);
-            console.log('album,', album);
+            let mediaResult;
             if(album === null) {
-            await MediaLibrary.createAlbumAsync(albumName, asset, false)
+                mediaResult = await MediaLibrary.createAlbumAsync(albumName, asset, false)
+                if(mediaResult && mediaResult.id) return {success: true}
             } else {
-            await MediaLibrary.addAssetsToAlbumAsync([asset], album, true)
+                mediaResult = await MediaLibrary.addAssetsToAlbumAsync([asset], album, true)
+                if(mediaResult) return {success: true}
             }
-            
+            //couldn't save the media
+            return {success: false, error: null}
         } catch (error) {
             console.error(error);
+            return {success: false, error: error}
         }
     } else {
-        console.log('no permission', url);
+        return {success: false}
     }
+}
+
+export const getUri = async(url: string) => {
+    const filename = `${Date.now()}.jpg`;
+    const fileUri = FileSystem.documentDirectory + filename;
+    const { uri } = await FileSystem.downloadAsync(url, fileUri);    
+    return uri
 }

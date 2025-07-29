@@ -35,3 +35,9 @@ export type ImageDataType = {
   success: boolean,
   total_count: number,
 }
+
+export type ResultType = {
+  success: boolean,
+  result?: any,
+  error?: Error | null
+}

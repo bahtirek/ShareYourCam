@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { SignedUrlType } from "@/types";
 
 export const insertImageData = async (receiverSessionId: string, url: string) => { 
   try {
@@ -30,8 +31,8 @@ export const getImageAsUrls = async (filePaths: string[], storage: string) => {
     if (error) {
       throw error
     }
-     
-    return data
+
+    return data as SignedUrlType[]
   } catch (error) {
     console.error('getImageAsUrls, Error downloading image:', error)
     throw error
@@ -48,7 +49,7 @@ export const getImageAsUrl = async (filePath: string, storage: string) => {
       throw error
     }
     
-    return data
+    return data as SignedUrlType
   } catch (error) {
     console.error('getImageAsUrl, Error downloading image:', error)
     throw error
@@ -83,6 +84,25 @@ export const getAllImages = async (appId: string) => {
       throw error
     }
 
+    return data
+  } catch (error) {
+    console.error('Error on getting urls:', error)
+    throw error
+  }
+}
+
+export const deleteImageFromDB = async (url: string) => {
+  try {
+    const { data, error } = await supabase
+    .rpc('delete_image_and_check_session', {
+      input_url: url
+    });
+    
+    if (error) {
+      throw error
+    }
+    console.log('delete image', data);
+    
     return data
   } catch (error) {
     console.error('Error on getting urls:', error)

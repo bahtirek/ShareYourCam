@@ -30,8 +30,14 @@ export const saveToMediaLibrary = async(url: SignedUrlType) => {
 }
 
 export const getUri = async(url: SignedUrlType) => {
-    const filename = `${Date.now()}.jpg`;
+    const {filename} = getFilenameAndSession(url.path);
     const fileUri = FileSystem.documentDirectory + filename;
     const { uri } = await FileSystem.downloadAsync(url.signedUrl, fileUri);    
     return uri
+}
+
+export const getFilenameAndSession = (path: string) => {
+    const pathSplit = path.split('/')
+    
+    return {session: pathSplit[0], filename: pathSplit[1]}
 }

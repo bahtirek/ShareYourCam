@@ -5,8 +5,9 @@ import { ImageType, SignedUrlType } from "@/types";
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
   listenForImages: (sessionId: number) => void;
-  addImageURLs: (imageData: ImageType) => void;
+  addImageURLs: (imageData: SignedUrlType) => void;
   resetImageReceiving: () => void;
+  removeImageURL: (path: string) => void;
   imageReceivingStarted: boolean
   signedUrls: SignedUrlType[],
   signedThumbnailUrls: SignedUrlType[],
@@ -17,6 +18,7 @@ export const ImageContext = createContext<ImageProviderType>({
   listenForImages: () => ({}),
   addImageURLs: () => ({}),
   resetImageReceiving: () => ({}),
+  removeImageURL: () => ({}),
   signedUrls: [],
   signedThumbnailUrls: [],
   imageReceivingStarted: false
@@ -67,21 +69,28 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     
   const getNewImageSignedUrl = async (url: string) => {
     const signedThumbnailUrl = await getImageAsUrl(url, 'thumbnails'); 
-    const signedUrl = await getImageAsUrl(url, 'images'); 
-    setSignedThumbnailUrls((prevURLs: ImageType[]) => [...prevURLs, signedThumbnailUrl]);
-    setSignedUrls((prevURLs: ImageType[]) => [...prevURLs, signedUrl]);
+    const signedUrl: SignedUrlType = await getImageAsUrl(url, 'images');
+    signedUrl.path = url;
+    setSignedThumbnailUrls((prevURLs: SignedUrlType[]) => [...prevURLs, signedThumbnailUrl]);
+    setSignedUrls((prevURLs: SignedUrlType[]) => [...prevURLs, signedUrl]);
   }
 
   const resetImageReceiving = () => {
     setImageReceivingStarted(false)
   }
 
-  const addImageURLs = async (imageData: ImageType) => {
-    setSignedUrls((prevUrls: ImageType[]) => [...prevUrls, imageData])
+  const addImageURLs = async (imageData: SignedUrlType) => {
+    setSignedUrls((prevUrls: SignedUrlType[]) => [...prevUrls, imageData])
+  }
+
+  const removeImageURL = async (path: string) => {
+    setSignedUrls((prevUrls: SignedUrlType[]) => {
+      return prevUrls.filter((item: SignedUrlType) => item.path != path)
+    })
   }
 
   return (
-    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
+    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, removeImageURL, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
       {children}
     </ImageContext.Provider>
   )

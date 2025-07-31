@@ -8,10 +8,11 @@ type ImageType = {
   style: StyleProp<ImageStyle>,
   source: ImageSourcePropType,
   contentFit: ImageContentFit,
-  url: SignedUrlType
+  url: SignedUrlType,
+  onDownload: any
 }
 
-const ImageWrap = ({style, source, contentFit, url}: ImageType) => {
+const ImageWrap = ({style, source, contentFit, url, onDownload}: ImageType) => {
   return (
     <View className='h-full w-full'>
       <Image
@@ -22,10 +23,6 @@ const ImageWrap = ({style, source, contentFit, url}: ImageType) => {
         scale-down='none'
         allowDownscaling={false}
       />
-      {
-        (contentFit != "cover") && 
-        <DownloadImage url={url} />
-      }
     </View>
   )
 }

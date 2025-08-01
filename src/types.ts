@@ -48,3 +48,11 @@ export type SignedUrlType = {
   signedURL: string,
   error?: Error | null
 }
+
+export type CustomButtonType = {
+  label: string, 
+  containerStyles?: string,
+  handlePress?: any,
+  textStyles?: string, 
+  isLoading?: boolean 
+}

@@ -1,7 +1,8 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react";
-import { getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
+import { deleteImageFromDB, getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
 import { SignedUrlType } from "@/types";
 import { router } from "expo-router";
+import { deleteImageFromBucket } from "@/api/bucket";
 
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
@@ -10,6 +11,7 @@ type ImageProviderType = {
   resetImageReceiving: () => void;
   removeImageURL: (path: string) => void;
   showImageModal: (imageData: SignedUrlType) => void;
+  deleteImageFromCloud: (path: string) => Promise<Boolean | undefined>,
   imageReceivingStarted: boolean
   signedUrls: SignedUrlType[],
   currentUrl: SignedUrlType,
@@ -23,6 +25,7 @@ export const ImageContext = createContext<ImageProviderType>({
   resetImageReceiving: () => ({}),
   removeImageURL: () => ({}),
   showImageModal: () => ({}),
+  deleteImageFromCloud: (async () => (false)),
   signedUrls: [],
   signedThumbnailUrls: [],
   imageReceivingStarted: false,
@@ -107,8 +110,20 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     router.navigate('/image-modal')
   }
 
+  const deleteImageFromCloud = async (path: string) => {
+    const deleteImageFromDBResult = await deleteImageFromDB(path);
+    if(deleteImageFromDBResult.success) {
+      const deleteImageFromBucketResult = await deleteImageFromBucket(path);
+      if(deleteImageFromBucketResult.success) {
+        removeImageURL(path);
+        return true
+      }
+    } 
+    return false
+  }
+
   return (
-    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, removeImageURL, showImageModal, currentUrl, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
+    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, removeImageURL, showImageModal, deleteImageFromCloud, currentUrl, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
       {children}
     </ImageContext.Provider>
   )

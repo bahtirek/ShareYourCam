@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImage } from '@/providers/ImagesProvider';
 import React, { useEffect, useState } from 'react';
 import Toast, { ToastData, ToastType } from 'react-native-toast-message';
-import { deleteImageFromBucket } from '@/services/ImageServices';
+import { deleteImageFromBucket } from '@/api/bucket';
 import { deleteImageFromDB } from '@/api/images';
 import { saveToMediaLibrary, getUri } from '@/services/MediaService';
 import { shareAsync } from 'expo-sharing';
@@ -15,7 +15,7 @@ import Loader from '@/components/common/Loader';
 
 
 export default function ImageModal() {
-  const { currentUrl, removeImageURL } = useImage();
+  const { currentUrl, deleteImageFromCloud } = useImage();
   const [showModal, setShowModal] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
 
@@ -46,7 +46,7 @@ export default function ImageModal() {
   const onDeleteFromCloud = async(path: string) => {
     setShowModal(false);
     setShowLoader(true)
-    const deleteResult = await deleteFromCloud(path);
+    const deleteResult = await deleteImageFromCloud(path);
     if(deleteResult) {
       setShowLoader(false)
       const isPresented = router.canGoBack();
@@ -55,17 +55,6 @@ export default function ImageModal() {
     }
   }
   
-  const deleteFromCloud = async (path: string) => {
-    const deleteImageFromDBResult = await deleteImageFromDB(path);
-    if(deleteImageFromDBResult.success) {
-      const deleteImageFromBucketResult = await deleteImageFromBucket(path);
-      if(deleteImageFromBucketResult.success) {
-        removeImageURL(path);
-        return true
-      }
-    } 
-    return false
-  }
 
 
   return (

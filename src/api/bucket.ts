@@ -66,17 +66,18 @@ export const uploadThumbnailToBucket = async (
   }
 };
 
-export const deleteImageFromBucket = async (
-  filename: string
+export const deleteFromBucket = async (
+  filename: string,
+  bucket: string
 ): Promise<SendResult> => {
   try {
     const { data, error } = await supabase
       .storage
-      .from('images')
+      .from(bucket)
       .remove([filename]);
 
     if(error) {
-      console.error('Error deleting image:', error);
+      console.error(`Error deleting ${bucket}:`, error);
       return { 
         success: false, 
         message: error instanceof Error? error.message : 'Unknown error occurred'
@@ -84,15 +85,13 @@ export const deleteImageFromBucket = async (
     }
     return { success: true };
   } catch (error) {
-    console.error('Error deleting image:', error);
+    console.error(`Error deleting ${bucket}:`, error);
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
 };
-
-
 
 export const convertImageUriToBlob = async(imageUri: string) => {
   const response = await fetch(imageUri);

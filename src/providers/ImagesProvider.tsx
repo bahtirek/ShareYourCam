@@ -2,7 +2,7 @@ import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { deleteImageFromDB, getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
 import { SignedUrlType } from "@/types";
 import { router } from "expo-router";
-import { deleteImageFromBucket } from "@/api/bucket";
+import { deleteFromBucket } from "@/api/bucket";
 
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
@@ -113,8 +113,9 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   const deleteImageFromCloud = async (path: string) => {
     const deleteImageFromDBResult = await deleteImageFromDB(path);
     if(deleteImageFromDBResult.success) {
-      const deleteImageFromBucketResult = await deleteImageFromBucket(path);
+      const deleteImageFromBucketResult = await deleteFromBucket(path, 'images');
       if(deleteImageFromBucketResult.success) {
+        await deleteFromBucket(path, 'thumbnails');
         removeImageURL(path);
         return true
       }

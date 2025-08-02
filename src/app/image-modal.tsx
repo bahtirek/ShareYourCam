@@ -3,8 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImage } from '@/providers/ImagesProvider';
 import React, { useEffect, useState } from 'react';
 import Toast, { ToastData, ToastType } from 'react-native-toast-message';
-import { deleteImageFromBucket } from '@/api/bucket';
-import { deleteImageFromDB } from '@/api/images';
 import { saveToMediaLibrary, getUri } from '@/services/MediaService';
 import { shareAsync } from 'expo-sharing';
 import { Image } from 'expo-image';
@@ -55,8 +53,6 @@ export default function ImageModal() {
     }
   }
   
-
-
   return (
     <SafeAreaView className='w-full h-full relative'>
         <View className='py-20 w-full h-full'>

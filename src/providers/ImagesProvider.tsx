@@ -1,6 +1,7 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
+import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
-import { ImageType, SignedUrlType } from "@/types";
+import { SignedUrlType } from "@/types";
+import { router } from "expo-router";
 
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
@@ -8,8 +9,10 @@ type ImageProviderType = {
   addImageURLs: (imageData: SignedUrlType) => void;
   resetImageReceiving: () => void;
   removeImageURL: (path: string) => void;
+  showImageModal: (imageData: SignedUrlType) => void;
   imageReceivingStarted: boolean
   signedUrls: SignedUrlType[],
+  currentUrl: SignedUrlType,
   signedThumbnailUrls: SignedUrlType[],
 }
 
@@ -19,14 +22,17 @@ export const ImageContext = createContext<ImageProviderType>({
   addImageURLs: () => ({}),
   resetImageReceiving: () => ({}),
   removeImageURL: () => ({}),
+  showImageModal: () => ({}),
   signedUrls: [],
   signedThumbnailUrls: [],
-  imageReceivingStarted: false
+  imageReceivingStarted: false,
+  currentUrl: {}
 });
 
 
 const ImageProvider = ({children}: PropsWithChildren) => { 
   const [signedUrls, setSignedUrls] = useState<any>([])
+  const [currentUrl, setCurrentUrl] = useState<SignedUrlType>({})
   const [signedThumbnailUrls, setSignedThumbnailUrls] = useState<any>([])
   const [imageReceivingStarted, setImageReceivingStarted] = useState(false)
   let navigation = false;
@@ -34,7 +40,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   const getAllImageURLs = async(appId: string) => {
     if(appId) {
       const data = await getAllImages(appId);
-      const urls = data.data.map((item: any) => item.url)
+      const urls = data.data.map((item: any) => item.url);      
       
       if(urls && urls.length > 0 ) {
         const signedThumbnailUrlsArray = await getImageAsUrls(urls, 'thumbnails');
@@ -67,11 +73,14 @@ const ImageProvider = ({children}: PropsWithChildren) => {
       .subscribe()
   }
     
-  const getNewImageSignedUrl = async (url: string) => {
-    const signedThumbnailUrl = await getImageAsUrl(url, 'thumbnails'); 
-    const signedUrl: SignedUrlType = await getImageAsUrl(url, 'images');
-    signedUrl.path = url;
-    setSignedThumbnailUrls((prevURLs: SignedUrlType[]) => [...prevURLs, signedThumbnailUrl]);
+  const getNewImageSignedUrl = async (path: string) => {
+    console.log('getNewImage', path);
+    
+    const signedThumbnailUrl = await getImageAsUrl(path, 'thumbnails'); 
+    const signedUrl: SignedUrlType = await getImageAsUrl(path, 'images');
+    signedUrl.path = path;
+    signedThumbnailUrl.path = path;
+    setSignedThumbnailUrls((prevURLs: SignedUrlType[]) => [...prevURLs, signedThumbnailUrl, ]);
     setSignedUrls((prevURLs: SignedUrlType[]) => [...prevURLs, signedUrl]);
   }
 
@@ -87,10 +96,19 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     setSignedUrls((prevUrls: SignedUrlType[]) => {
       return prevUrls.filter((item: SignedUrlType) => item.path != path)
     })
+    setSignedThumbnailUrls((prevUrls: SignedUrlType[]) => {
+      return prevUrls.filter((item: SignedUrlType) => item.path != path)
+    })
+  }
+
+  const showImageModal = async(url: SignedUrlType) => {
+    const signedUrl: SignedUrlType = await getImageAsUrl(url.path!, 'images');
+    setCurrentUrl({...signedUrl, path: url.path});
+    router.navigate('/image-modal')
   }
 
   return (
-    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, removeImageURL, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
+    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, removeImageURL, showImageModal, currentUrl, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
       {children}
     </ImageContext.Provider>
   )

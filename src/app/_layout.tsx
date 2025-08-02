@@ -37,6 +37,7 @@ export default function RootLayout() {
           <Stack.Screen name="receiver/images" options={{ headerShown: true, headerTransparent: true, title: 'Images', headerTintColor: '#db7093', headerTitleStyle: { color: '#db7093' } }} />
           <Stack.Screen name="sender/scan-qrcode" options={{ headerShown: true, headerTransparent: true, title: 'Scan QR code', headerTintColor: '#ffa500', headerTitleStyle: { color: '#ffa500' } }} />
           <Stack.Screen name="sender/camera" options={{ headerShown: true, headerTransparent: true, title: 'Say cheese', headerTintColor: '#ffa500', headerTitleStyle: { color: '#ffa500' } }} />
+          <Stack.Screen name="image-modal" options={{ presentation: 'modal', headerShown: true, headerTransparent: true, title: 'Image', headerTintColor: '#db7093', headerTitleStyle: { color: '#db7093' } }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

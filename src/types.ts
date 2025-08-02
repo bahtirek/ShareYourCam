@@ -43,9 +43,9 @@ export type ResultType = {
 }
 
 export type SignedUrlType = {
-  path: string,
-  signedUrl: string,
-  signedURL: string,
+  path?: string,
+  signedUrl?: string,
+  signedURL?: string,
   error?: Error | null
 }
 

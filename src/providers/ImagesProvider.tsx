@@ -38,7 +38,6 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   const [currentUrl, setCurrentUrl] = useState<SignedUrlType>({})
   const [signedThumbnailUrls, setSignedThumbnailUrls] = useState<any>([])
   const [imageReceivingStarted, setImageReceivingStarted] = useState(false)
-  let navigation = false;
 
   const getAllImageURLs = async(appId: string) => {
     if(appId) {
@@ -56,7 +55,6 @@ const ImageProvider = ({children}: PropsWithChildren) => {
 
   const listenForImages = (sessionDBId: number) => {
     console.log('listening', sessionDBId);
-    navigation = false;
 
     listenImagesChannel()
       .on(

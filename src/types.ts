@@ -47,7 +47,8 @@ export type SignedUrlType = {
   signedUrl?: string,
   signedURL?: string,
   error?: Error | null,
-  status?: Status
+  status?: Status,
+  localUrl?: string,
 }
 
 export type CustomButtonType = {

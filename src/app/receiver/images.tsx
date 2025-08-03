@@ -8,7 +8,7 @@ import { Image } from 'expo-image';
 
 
 export default function HomeScreen() {
-  const { signedThumbnailUrls, showImageModal } = useImage();
+  const { pendingImages, showImageModal } = useImage();
 
   const showToast = (toastType: ToastType, toastContent: ToastData) => {
     Toast.show({
@@ -24,7 +24,7 @@ export default function HomeScreen() {
         <View className='py-20 w-full'>
           <View className='flex-row w-[304px] m-auto flex-wrap gap-4'>
           {
-            signedThumbnailUrls.map((url: SignedUrlType, index) => {
+            pendingImages.map((url: SignedUrlType, index) => {
               return (
                 <View style={styles.imageContainer} key={index}>
                   <TouchableOpacity

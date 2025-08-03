@@ -8,23 +8,7 @@ import { Image } from 'expo-image';
 
 
 export default function HomeScreen() {
-  const { signedThumbnailUrls, showImageModal, receivedImages, downloadNewImage, setReceivedImages} = useImage();
-
-  useEffect(() => {
-    //downloadImage()
-  }, [receivedImages])
-
-/*   const downloadImage = async() => {
-    console.log('receivedImages', receivedImages);
-    for (const item of receivedImages) {
-        if(item.status == Status.Pending) {
-            await downloadNewImage(item.path!);
-            const index = 
-            receivedImages
-            setReceivedImages([...receivedImages])
-        }
-    }
-  } */
+  const { showImageModal, receivedImages } = useImage();
 
   const showToast = (toastType: ToastType, toastContent: ToastData) => {
     Toast.show({

@@ -1,43 +1,47 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { deleteImageFromDB, getAllImages, getImageAsUrl, getImageAsUrls, listenImagesChannel } from '@/api/images';
-import { SignedUrlType } from "@/types";
+import { SignedUrlType, Status } from "@/types";
 import { router } from "expo-router";
 import { deleteFromBucket } from "@/api/bucket";
+import { getLastSavedImageFromAlbum, saveToMediaLibrary } from "@/services/MediaService";
 
 type ImageProviderType = {
   getAllImageURLs: (appId: string) => void;
   listenForImages: (sessionId: number) => void;
-  addImageURLs: (imageData: SignedUrlType) => void;
   resetImageReceiving: () => void;
   removeImageURL: (path: string) => void;
   showImageModal: (imageData: SignedUrlType) => void;
   deleteImageFromCloud: (path: string) => Promise<Boolean | undefined>,
+  downloadNewImage: (path: string) => void;
+  setReceivedImages: (imagesData: SignedUrlType[]) => void;
   imageReceivingStarted: boolean
-  signedUrls: SignedUrlType[],
+  pendingImages: SignedUrlType[],
   currentUrl: SignedUrlType,
-  signedThumbnailUrls: SignedUrlType[],
+  receivedImages: SignedUrlType[],
 }
 
 export const ImageContext = createContext<ImageProviderType>({
   getAllImageURLs: () => ({}),
   listenForImages: () => ({}),
-  addImageURLs: () => ({}),
   resetImageReceiving: () => ({}),
   removeImageURL: () => ({}),
   showImageModal: () => ({}),
   deleteImageFromCloud: (async () => (false)),
-  signedUrls: [],
-  signedThumbnailUrls: [],
+  downloadNewImage: () => ({}),
+  setReceivedImages: () => ({}),
+  pendingImages: [],
   imageReceivingStarted: false,
-  currentUrl: {}
+  currentUrl: {},
+  receivedImages: [],
 });
 
 
 const ImageProvider = ({children}: PropsWithChildren) => { 
-  const [signedUrls, setSignedUrls] = useState<any>([])
   const [currentUrl, setCurrentUrl] = useState<SignedUrlType>({})
-  const [signedThumbnailUrls, setSignedThumbnailUrls] = useState<any>([])
+  const [pendingImages, setPendingImages] = useState<any>([])
   const [imageReceivingStarted, setImageReceivingStarted] = useState(false)
+  const [showLoader, setShowLoader] = useState(false);
+  const [receivedImages, setReceivedImages] = useState<SignedUrlType[]>([]);
 
   const getAllImageURLs = async(appId: string) => {
     if(appId) {
@@ -46,9 +50,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
       
       if(urls && urls.length > 0 ) {
         const signedThumbnailUrlsArray = await getImageAsUrls(urls, 'thumbnails');
-        const signedUrlsArray = await getImageAsUrls(urls, 'images');
-        setSignedThumbnailUrls(signedThumbnailUrlsArray)
-        setSignedUrls(signedUrlsArray)
+        setPendingImages(signedThumbnailUrlsArray)
       }
     }
   }
@@ -68,36 +70,55 @@ const ImageProvider = ({children}: PropsWithChildren) => {
         (payload) => {
           console.log('Change received!', payload);
           setImageReceivingStarted(true);
-          getNewImageSignedUrl(payload.new.url)
+          downloadNewImage(payload.new.url)
         }
       )
       .subscribe()
   }
-    
-  const getNewImageSignedUrl = async (path: string) => {
-    console.log('getNewImage', path);
-    
-    const signedThumbnailUrl = await getImageAsUrl(path, 'thumbnails'); 
+  
+  const downloadNewImage = async(path: string) => {
     const signedUrl: SignedUrlType = await getImageAsUrl(path, 'images');
     signedUrl.path = path;
+
+    getNewImageSignedUrl(signedUrl.path!)
+    const result = await saveToMediaLibrary(signedUrl);
+    
+    if(result && result.success) {
+      setImageFromAlbum(signedUrl.path)
+    }
+  } 
+
+  const getNewImageSignedUrl = async (path: string) => {
+    const signedThumbnailUrl = await getImageAsUrl(path, 'thumbnails'); 
+
     signedThumbnailUrl.path = path;
-    setSignedThumbnailUrls((prevURLs: SignedUrlType[]) => [...prevURLs, signedThumbnailUrl, ]);
-    setSignedUrls((prevURLs: SignedUrlType[]) => [...prevURLs, signedUrl]);
+    signedThumbnailUrl.status = Status.Pending;
+    setReceivedImages((prevURLs: SignedUrlType[]) => [...prevURLs, signedThumbnailUrl, ]);
+  }
+
+  const setImageFromAlbum = async(path: string) => {
+    const lastSavedImage = await getLastSavedImageFromAlbum();
+    let localUri = ''
+    if(lastSavedImage && lastSavedImage.uri) localUri = lastSavedImage.uri
+
+    setReceivedImages((prevURLs: SignedUrlType[]) => {
+      return prevURLs.map((url: SignedUrlType) => {
+        if (url.path == path) {
+          return {...url, status: Status.Received, localUrl: localUri}
+        }
+        return url
+      })
+    });
+
+    //deleteImageFromCloud(path)
   }
 
   const resetImageReceiving = () => {
     setImageReceivingStarted(false)
   }
 
-  const addImageURLs = async (imageData: SignedUrlType) => {
-    setSignedUrls((prevUrls: SignedUrlType[]) => [...prevUrls, imageData])
-  }
-
   const removeImageURL = async (path: string) => {
-    setSignedUrls((prevUrls: SignedUrlType[]) => {
-      return prevUrls.filter((item: SignedUrlType) => item.path != path)
-    })
-    setSignedThumbnailUrls((prevUrls: SignedUrlType[]) => {
+    setPendingImages((prevUrls: SignedUrlType[]) => {
       return prevUrls.filter((item: SignedUrlType) => item.path != path)
     })
   }
@@ -122,7 +143,20 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   }
 
   return (
-    <ImageContext.Provider value={{getAllImageURLs, addImageURLs, listenForImages, resetImageReceiving, removeImageURL, showImageModal, deleteImageFromCloud, currentUrl, signedThumbnailUrls, signedUrls, imageReceivingStarted}}>
+    <ImageContext.Provider value={{
+      getAllImageURLs,
+      listenForImages, 
+      resetImageReceiving, 
+      removeImageURL, 
+      showImageModal, 
+      deleteImageFromCloud,
+      downloadNewImage,
+      setReceivedImages,
+      receivedImages, 
+      currentUrl,
+      pendingImages, 
+      imageReceivingStarted}}
+    >
       {children}
     </ImageContext.Provider>
   )

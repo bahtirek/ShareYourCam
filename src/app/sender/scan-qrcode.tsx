@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useSession } from '@/providers/SessionProvider';
 import { useFocusEffect } from 'expo-router';
 import AlertModal from '@components/common/AlertModal';
+import Loader from '@/components/common/Loader';
 
 export default function HomeScreen() {
   const { session, startSession, setReceiverSessionId } = useSession();
@@ -33,17 +34,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={["left", "right"]} className='h-full bg-white'>
       <QRCodeScanner onScan={handleScan }/>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showLoaderModal}
-      >
-        <View className='h-full w-full justify-center items-center bg-black/40 '>
-        <View className=''>
-          <ActivityIndicator size={'large'} color={"#FF4416"} />
-        </View>
-        </View>
-      </Modal>
+      <Loader show={showLoaderModal} />
       <AlertModal
         title='Sorry!'
         text='Something went wrong. Please try later.'

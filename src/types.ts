@@ -43,10 +43,12 @@ export type ResultType = {
 }
 
 export type SignedUrlType = {
-  path: string,
-  signedUrl: string,
-  signedURL: string,
-  error?: Error | null
+  path?: string,
+  signedUrl?: string,
+  signedURL?: string,
+  error?: Error | null,
+  status?: Status,
+  localUrl?: string,
 }
 
 export type CustomButtonType = {
@@ -55,4 +57,11 @@ export type CustomButtonType = {
   handlePress?: any,
   textStyles?: string, 
   isLoading?: boolean 
+}
+
+export enum Status {
+  Pending = "PENDING",
+  InProgress = "INPROGRESS",
+  Received = "RECEIVED",
+  Rejected = "REJECTED"
 }

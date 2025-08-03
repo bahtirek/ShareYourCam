@@ -1,14 +1,14 @@
-import { View, StyleSheet, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Platform, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImage } from '@/providers/ImagesProvider';
-import React from 'react';
-import { SignedUrlType } from '@/types';
+import React, { useEffect } from 'react';
+import { SignedUrlType, Status } from '@/types';
 import Toast, { ToastData, ToastType } from 'react-native-toast-message';
 import { Image } from 'expo-image';
 
 
 export default function HomeScreen() {
-  const { pendingImages, showImageModal } = useImage();
+  const { showImageModal, receivedImages } = useImage();
 
   const showToast = (toastType: ToastType, toastContent: ToastData) => {
     Toast.show({
@@ -24,9 +24,9 @@ export default function HomeScreen() {
         <View className='py-20 w-full'>
           <View className='flex-row w-[304px] m-auto flex-wrap gap-4'>
           {
-            pendingImages.map((url: SignedUrlType, index) => {
+            receivedImages.map((url: SignedUrlType, index) => {
               return (
-                <View style={styles.imageContainer} key={index}>
+                <View style={styles.imageContainer} key={index} className='relative'>
                   <TouchableOpacity
                     onPress={() => showImageModal(url)}
                     activeOpacity={0.7}
@@ -40,6 +40,12 @@ export default function HomeScreen() {
                       allowDownscaling={false}
                     />
                   </TouchableOpacity>
+                  {
+                    (url.status !== Status.Received) &&
+                    <View className='h-full w-full justify-center items-center bg-black/30 absolute'>
+                        <ActivityIndicator color={"#fff"} />
+                    </View>
+                  }
                 </View>
               )
             })

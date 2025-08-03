@@ -42,7 +42,7 @@ export default function HomeScreen() {
   useEffect(() => {
     console.log('imageReceivingStarted', imageReceivingStarted);
     if(imageReceivingStarted) {
-      router.navigate('/receiver/images');
+      router.navigate('/receiver/receiving-images');
     }
   }, [imageReceivingStarted])
 

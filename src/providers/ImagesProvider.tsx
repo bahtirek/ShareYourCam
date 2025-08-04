@@ -110,7 +110,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
       })
     });
 
-    //deleteImageFromCloud(path)
+    await deleteImageFromCloud(path)
   }
 
   const resetImageReceiving = () => {
@@ -123,14 +123,18 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     })
   }
 
-  const showImageModal = async(url: SignedUrlType) => {
-    const signedUrl: SignedUrlType = await getImageAsUrl(url.path!, 'images');
-    setCurrentUrl({...signedUrl, path: url.path});
+  const showImageModal = async(url: SignedUrlType) => {   
+    if(url.localUrl) {
+      setCurrentUrl({...url, path: url.path, signedUrl: url.localUrl});
+    } else {
+      const signedUrl: SignedUrlType = await getImageAsUrl(url.path!, 'images');
+      setCurrentUrl({...signedUrl, path: url.path});
+    }
     router.navigate('/image-modal')
   }
 
   const deleteImageFromCloud = async (path: string) => {
-    const deleteImageFromDBResult = await deleteImageFromDB(path);
+    const deleteImageFromDBResult = await deleteImageFromDB(path);   
     if(deleteImageFromDBResult.success) {
       const deleteImageFromBucketResult = await deleteFromBucket(path, 'images');
       if(deleteImageFromBucketResult.success) {

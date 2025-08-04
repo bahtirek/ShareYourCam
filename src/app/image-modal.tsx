@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import IconButton from '@/components/common/IconButton';
 import icons from '@constants/Icons';
 import Loader from '@/components/common/Loader';
+import { Status } from '@/types';
 
 
 export default function ImageModal() {
@@ -65,14 +66,17 @@ export default function ImageModal() {
             allowDownscaling={false}
             /> 
         </View>
-        <View className='flex-row justify-center align-center absolute bottom-14 w-full'>
-          <IconButton
-            icon={icons.download}
-            handlePress={onDownload}
-            imageClassName='!w-10 !h-10'
-            className='p-3 rounded bg-white/50'
-          />
-        </View>
+        {
+          !(currentUrl.status && currentUrl.status == Status.Received) &&
+          <View className='flex-row justify-center align-center absolute bottom-14 w-full'>
+            <IconButton
+              icon={icons.download}
+              handlePress={onDownload}
+              imageClassName='!w-10 !h-10'
+              className='p-3 rounded bg-white/50'
+            />
+          </View>
+        }
         <Modal
           animationType="fade"
           transparent={true}

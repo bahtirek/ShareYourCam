@@ -5,10 +5,9 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useSession } from '@/providers/SessionProvider';
 import { useImage } from '@/providers/ImagesProvider';
-import RadialGradientCircle from '@/components/common/RadialGradientCircle';
 
 export default function HomeScreen() {
-  const { getAllImageURLs, signedUrls } = useImage();
+  const { downloadAllPendingImages, pendingImages } = useImage();
   const { session } = useSession();
   const [totalImages, setTotalImages] = useState<number>(0);
   const screenHeight = Dimensions.get('screen').height;
@@ -16,6 +15,10 @@ export default function HomeScreen() {
   useEffect(() => { 
     getAllImages()
   }, [session])
+
+  useEffect(() => { 
+    setTotalImages(pendingImages.length)
+  }, [pendingImages])
 
   const goToScanQrCode = () => {
     router.navigate('/sender/scan-qrcode')
@@ -31,24 +34,13 @@ export default function HomeScreen() {
 
   const getAllImages = async() => {
     if(session.appId) {
-      await getAllImageURLs(session.appId);
-      setTotalImages(signedUrls.length)
+      await downloadAllPendingImages(session.appId);
+      
     }
   }
 
-  const colorList = ['#ffffff', '#ffffff', '#ffffff', '#f0f0f0', '#f0f0f0', '#f0f0f0', '#f0f0f0', '#f0f0f0']
-
   return (
     <SafeAreaView className='h-full w-full justify-between items-center'>
-      <View className='h-full w-full absolute items-center'>
-        <RadialGradientCircle
-          size={screenHeight} // Diameter of the circle
-          colors={colorList} // Array of colors for the gradient
-          cx={screenHeight/2} // X-coordinate of the gradient center (relative to the circle's top-left)
-          cy={screenHeight/2} // Y-coordinate of the gradient center
-          r={screenHeight/2} // Radius of the gradient
-        />
-      </View>
       <View className='h-full'>
         <View className='h-[220] w-[220] m-auto'>
           <View className='absolute top-[20%]'>
@@ -77,19 +69,11 @@ export default function HomeScreen() {
               <Text className='text-sm text-center' style={styles.colorBlue}>Receive</Text>
             </TouchableOpacity>
           </View>
-          <View className='absolute bottom-[-10%] left-[38%]'>
-            <TouchableOpacity
-              onPress={goToImages}
-              className='w-14 h-16 items-center justify-center'
-            >
-              <Image 
-                source={icons.gallery}
-                className='!w-14 !h-14'
-                resizeMode='contain'
-              />
-              <Text className='text-sm text-center' style={styles.colorViolet}>Images</Text>
-            </TouchableOpacity>
-          </View>
+        </View>
+        <View className='items-center justify-center mb-6'>
+          <TouchableOpacity onPress={goToImages}>
+            <Text style={{ color: '#3674B5', fontSize: 18 }}>{totalImages} pending downloads</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -97,11 +81,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  gradientBg: {
-    position: 'absolute',
-    width: "100%",
-    height: "100%",
-  },
   colorViolet: {
     color: "palevioletred"
   },

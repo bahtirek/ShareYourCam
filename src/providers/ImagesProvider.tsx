@@ -6,7 +6,7 @@ import { deleteFromBucket } from "@/api/bucket";
 import { getLastSavedImageFromAlbum, saveToMediaLibrary } from "@/services/MediaService";
 
 type ImageProviderType = {
-  getAllImageURLs: (appId: string) => void;
+  downloadAllPendingImages: (appId: string) => void;
   listenForImages: (sessionId: number) => void;
   resetImageReceiving: () => void;
   removeImageURL: (path: string) => void;
@@ -21,7 +21,7 @@ type ImageProviderType = {
 }
 
 export const ImageContext = createContext<ImageProviderType>({
-  getAllImageURLs: () => ({}),
+  downloadAllPendingImages: () => ({}),
   listenForImages: () => ({}),
   resetImageReceiving: () => ({}),
   removeImageURL: () => ({}),
@@ -49,9 +49,12 @@ const ImageProvider = ({children}: PropsWithChildren) => {
       const urls = data.data.map((item: any) => item.url);      
       
       if(urls && urls.length > 0 ) {
-        const signedThumbnailUrlsArray = await getImageAsUrls(urls, 'thumbnails');
-        setPendingImages(signedThumbnailUrlsArray)
+        return await getImageAsUrls(urls, 'thumbnails');       
+      } else {
+        return []
       }
+    } else {
+      return []
     }
   }
 
@@ -80,7 +83,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     const signedUrl: SignedUrlType = await getImageAsUrl(path, 'images');
     signedUrl.path = path;
 
-    getNewImageSignedUrl(signedUrl.path!)
+    getThumbnailSignedUrl(signedUrl.path!)
     const result = await saveToMediaLibrary(signedUrl);
     
     if(result && result.success) {
@@ -88,7 +91,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     }
   } 
 
-  const getNewImageSignedUrl = async (path: string) => {
+  const getThumbnailSignedUrl = async (path: string) => {
     const signedThumbnailUrl = await getImageAsUrl(path, 'thumbnails'); 
 
     signedThumbnailUrl.path = path;
@@ -146,9 +149,22 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     return false
   }
 
+  const downloadAllPendingImages = async (appId: string) => {
+    const imagesToDownload: SignedUrlType[] = await getAllImageURLs(appId);
+    
+    for (const image of imagesToDownload) {
+      if(!image.path) return;
+      const signedUrl: SignedUrlType = await getImageAsUrl(image.path, 'images');
+      signedUrl.path = image.path;
+      const result = await saveToMediaLibrary(signedUrl);     
+      if(result) await deleteImageFromCloud(image.path); 
+    }
+    const pending: SignedUrlType[] = await getAllImageURLs(appId);  
+    setPendingImages(pending);
+  }
+
   return (
     <ImageContext.Provider value={{
-      getAllImageURLs,
       listenForImages, 
       resetImageReceiving, 
       removeImageURL, 
@@ -156,6 +172,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
       deleteImageFromCloud,
       downloadNewImage,
       setReceivedImages,
+      downloadAllPendingImages,
       receivedImages, 
       currentUrl,
       pendingImages, 

@@ -9,7 +9,7 @@ import qr_code from "../../assets/icons/scan.png";
 import gallery from "../../assets/icons/gallery.png";
 import shutter from "../../assets/icons/shutter.png";
 import download from "../../assets/icons/download.png";
-import download2 from "../../assets/icons/arrow.png";
+import close from "../../assets/icons/close.png";
 
 
 export default {
@@ -24,5 +24,5 @@ export default {
   gallery,
   shutter,
   download,
-  download2,
+  close,
 }

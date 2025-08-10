@@ -1,19 +1,21 @@
-import { View, Image, TouchableOpacity, ImageSourcePropType } from 'react-native'
+import { View, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import icons from '@constants/Icons';
+import { SignedUrlType } from '@/types';
 
 type SourceType = {
-  source: ImageSourcePropType
+  url: SignedUrlType,
+  onDownload: any
 }
 
-const DownloadImage = ({source}: SourceType) => {
-  const download = () => {
-    console.log('download', source);
-    
+const DownloadImage = ({url, onDownload}: SourceType) => {
+
+  const download = async() => {
+    onDownload(url)
   }
 
   return (
-    <View className='absolute bottom-16 w-full items-center'>
+    <View className='absolute bottom-10 w-full items-center'>
       <TouchableOpacity
         onPress={download}
         className='w-12 h-12 items-center justify-center bg-white/40 rounded-md'

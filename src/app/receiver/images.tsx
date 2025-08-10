@@ -1,13 +1,22 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Image, ImageContentFit } from 'expo-image';
+import { View, StyleSheet, ScrollView, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useImage } from '@/providers/ImagesProvider';
-import ImageModal from 'react-native-image-modal';
 import React from 'react';
-import ImageWrap from '@/components/receiver/ImageWrap';
+import { SignedUrlType } from '@/types';
+import Toast, { ToastData, ToastType } from 'react-native-toast-message';
+import { Image } from 'expo-image';
+
 
 export default function HomeScreen() {
-  const { signedUrls } = useImage();
+  const { pendingImages, showImageModal } = useImage();
+
+  const showToast = (toastType: ToastType, toastContent: ToastData) => {
+    Toast.show({
+      type: toastType,
+      text1: toastContent.text1,
+      text2: toastContent.text2
+    });
+  }
 
   return (
     <SafeAreaView className='w-full'>
@@ -15,23 +24,22 @@ export default function HomeScreen() {
         <View className='py-20 w-full'>
           <View className='flex-row w-[304px] m-auto flex-wrap gap-4'>
           {
-            signedUrls.map((url: any, index) => {
+            pendingImages.map((url: SignedUrlType, index) => {
               return (
                 <View style={styles.imageContainer} key={index}>
-                  <ImageModal
-                    isTranslucent={false}
-                    style={{width: 64, height: 64}}
-                    source={{uri: `${url.signedUrl}`}}
-                    resizeMode="cover"
-                    modalImageResizeMode="contain"
-                    renderImageComponent={({source, resizeMode, style}) => (
-                      <ImageWrap
-                        style={style}
-                        source={source}
-                        contentFit={resizeMode as ImageContentFit}
-                      />
-                    )}
-                  />
+                  <TouchableOpacity
+                    onPress={() => showImageModal(url)}
+                    activeOpacity={0.7}
+                  >
+                    <Image
+                      style={{width: 64, height: 64}}
+                      source={{uri: `${url.signedUrl}`}}
+                      contentFit="cover"
+                      transition={1000}
+                      scale-down='none'
+                      allowDownscaling={false}
+                    />
+                  </TouchableOpacity>
                 </View>
               )
             })
@@ -50,4 +58,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
   },
+  shadow: {
+    shadowColor: "rgba(152, 152, 152, 0.5)",
+    shadowOffset: {
+        width: 0,
+        height: 7,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 7,
+
+    elevation: 10,
+    ...Platform.select({
+      android: {
+        shadowColor: "rgba(0, 0, 0, 0.5)",
+        shadowOpacity: 1,
+      }
+    })
+  }
 });

@@ -35,3 +35,33 @@ export type ImageDataType = {
   success: boolean,
   total_count: number,
 }
+
+export type ResultType = {
+  success: boolean,
+  result?: any,
+  error?: Error | null
+}
+
+export type SignedUrlType = {
+  path?: string,
+  signedUrl?: string,
+  signedURL?: string,
+  error?: Error | null,
+  status?: Status,
+  localUrl?: string,
+}
+
+export type CustomButtonType = {
+  label: string, 
+  containerStyles?: string,
+  handlePress?: any,
+  textStyles?: string, 
+  isLoading?: boolean 
+}
+
+export enum Status {
+  Pending = "PENDING",
+  InProgress = "INPROGRESS",
+  Received = "RECEIVED",
+  Rejected = "REJECTED"
+}

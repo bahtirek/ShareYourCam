@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 
 import "../../global.css";
 import SessionProvider from '@/providers/SessionProvider';
@@ -34,11 +35,14 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="receiver/generate-qrcode" options={{ headerShown: true, headerTransparent: true, title: 'QR code', headerTintColor: '#1e90ff', headerTitleStyle: { color: '#1e90ff' } }} />
           <Stack.Screen name="receiver/images" options={{ headerShown: true, headerTransparent: true, title: 'Images', headerTintColor: '#db7093', headerTitleStyle: { color: '#db7093' } }} />
+          <Stack.Screen name="receiver/receiving-images" options={{ headerShown: true, headerTransparent: true, title: 'Images', headerTintColor: '#db7093', headerTitleStyle: { color: '#db7093' } }} />
           <Stack.Screen name="sender/scan-qrcode" options={{ headerShown: true, headerTransparent: true, title: 'Scan QR code', headerTintColor: '#ffa500', headerTitleStyle: { color: '#ffa500' } }} />
           <Stack.Screen name="sender/camera" options={{ headerShown: true, headerTransparent: true, title: 'Say cheese', headerTintColor: '#ffa500', headerTitleStyle: { color: '#ffa500' } }} />
+          <Stack.Screen name="image-modal" options={{ presentation: 'modal', headerShown: true, headerTransparent: true, title: 'Image', headerTintColor: '#db7093', headerTitleStyle: { color: '#db7093' } }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
+        <Toast />
       </ImageProvider>
     </SessionProvider>
   );

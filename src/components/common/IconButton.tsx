@@ -5,9 +5,10 @@ type IconButtonType = {
   icon: ImageSourcePropType | undefined,
   handlePress: () => void
   className?: string,
+  imageClassName?: string,
 }
 
-const IconButton = ({icon, handlePress, className}: IconButtonType) => {
+const IconButton = ({icon, handlePress, className, imageClassName = '!w-6 !h-6'}: IconButtonType) => {
   return (
     <TouchableOpacity
       onPress={handlePress}
@@ -15,7 +16,7 @@ const IconButton = ({icon, handlePress, className}: IconButtonType) => {
     >
         <Image 
           source={icon}
-          className='!w-6 !h-6'
+          className={imageClassName}
           resizeMode='cover'
         />
     </TouchableOpacity>

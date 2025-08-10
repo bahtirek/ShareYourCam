@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { CameraView, Camera, CameraType, } from 'expo-camera';
 import { useSession } from '@/providers/SessionProvider';
-import { uploadImageToBucket, uploadThumbnailToBucket } from '@/services/ImageServices';
+import { uploadImageToBucket, uploadThumbnailToBucket } from '@/api/bucket';
 import { insertImageData } from '@/api/images';
 import { router } from 'expo-router';
 import UploadProgress from '@components/sender/UploadProgress'

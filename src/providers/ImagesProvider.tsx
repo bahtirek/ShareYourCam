@@ -6,7 +6,7 @@ import { deleteFromBucket } from "@/api/bucket";
 import { getLastSavedImageFromAlbum, saveToMediaLibrary } from "@/services/MediaService";
 
 type ImageProviderType = {
-  downloadAllPendingImages: (appId: string) => void;
+  downloadAllPendingImages: (appId: string) => Promise<Boolean | undefined>;
   listenForImages: (sessionId: number) => void;
   resetImageReceiving: () => void;
   removeImageURL: (path: string) => void;
@@ -21,7 +21,7 @@ type ImageProviderType = {
 }
 
 export const ImageContext = createContext<ImageProviderType>({
-  downloadAllPendingImages: () => ({}),
+  downloadAllPendingImages: (async () => (false)),
   listenForImages: () => ({}),
   resetImageReceiving: () => ({}),
   removeImageURL: () => ({}),
@@ -40,7 +40,6 @@ const ImageProvider = ({children}: PropsWithChildren) => {
   const [currentUrl, setCurrentUrl] = useState<SignedUrlType>({})
   const [pendingImages, setPendingImages] = useState<any>([])
   const [imageReceivingStarted, setImageReceivingStarted] = useState(false)
-  const [showLoader, setShowLoader] = useState(false);
   const [receivedImages, setReceivedImages] = useState<SignedUrlType[]>([]);
 
   const getAllImageURLs = async(appId: string) => {
@@ -161,6 +160,7 @@ const ImageProvider = ({children}: PropsWithChildren) => {
     }
     const pending: SignedUrlType[] = await getAllImageURLs(appId);  
     setPendingImages(pending);
+    return true
   }
 
   return (

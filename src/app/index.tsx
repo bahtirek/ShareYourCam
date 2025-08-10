@@ -16,10 +16,6 @@ export default function HomeScreen() {
     getAllImages()
   }, [session])
 
-  useEffect(() => { 
-    setTotalImages(pendingImages.length)
-  }, [pendingImages])
-
   const goToScanQrCode = () => {
     router.navigate('/sender/scan-qrcode')
   }
@@ -35,13 +31,13 @@ export default function HomeScreen() {
   const getAllImages = async() => {
     if(session.appId) {
       await downloadAllPendingImages(session.appId);
-      
+      setTotalImages(pendingImages.length)
     }
   }
 
   return (
     <SafeAreaView className='h-full w-full justify-between items-center'>
-      <View className='h-full'>
+      <View className='h-full w-full'>
         <View className='h-[220] w-[220] m-auto'>
           <View className='absolute top-[20%]'>
             <TouchableOpacity
@@ -70,10 +66,13 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        <View className='items-center justify-center mb-6'>
-          <TouchableOpacity onPress={goToImages}>
-            <Text style={{ color: '#3674B5', fontSize: 18 }}>{totalImages} pending downloads</Text>
-          </TouchableOpacity>
+        <View className='items-center justify-center absolute bottom-6 w-full'>
+          {
+            totalImages > 0 &&
+            <TouchableOpacity onPress={goToImages}>
+              <Text style={{ color: '#3674B5', fontSize: 18 }}>{totalImages} pending downloads</Text>
+            </TouchableOpacity>
+          }
         </View>
       </View>
     </SafeAreaView>
